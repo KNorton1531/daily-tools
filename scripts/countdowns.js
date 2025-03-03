@@ -2,10 +2,10 @@ document.addEventListener("DOMContentLoaded", function () {
     console.log("✅ Countdown Script Loaded");
 
     const countdowns = [
-        { title: "Spring", date: "03-20T00:00:00", annual: true },
-        { title: "Summer", date: "06-20T00:00:00", annual: true },
-        { title: "Autumn", date: "09-22T00:00:00", annual: true },
-        { title: "Winter", date: "12-21T00:00:00", annual: true },
+        { title: "Spring", date: "03-01T00:00:00", annual: true },
+        { title: "Summer", date: "06-01T00:00:00", annual: true },
+        { title: "Autumn", date: "09-01T00:00:00", annual: true },
+        { title: "Winter", date: "12-01T00:00:00", annual: true },
         { title: "Christmas", date: "12-25T00:00:00", annual: true },
         { title: "December", date: "12-01T00:00:00", annual: true },
         { title: "Halloween", date: "10-31T00:00:00", annual: true },
@@ -15,6 +15,30 @@ document.addEventListener("DOMContentLoaded", function () {
     const categoryContainer = document.querySelector(".categoryContainer");
     const gridViewBtn = document.querySelector(".sortItems span:nth-child(1)");
     const listViewBtn = document.querySelector(".sortItems span:nth-child(2)");
+
+    function getExactCountdown(targetDate) {
+        const now = new Date();
+        let timeDiff = targetDate - now;
+
+        if (timeDiff < 0) return null; // Event has passed
+
+        const totalDays = Math.ceil(timeDiff / (1000 * 60 * 60 * 24)); // Add 1 to include today
+        const totalHours = Math.ceil(timeDiff / (1000 * 60 * 60));
+
+        let months = targetDate.getMonth() - now.getMonth();
+        let days = targetDate.getDate() - now.getDate();
+        let weeks = Math.floor(totalDays / 7);
+        let hours = Math.floor((timeDiff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+
+        if (days < 0) {
+            months -= 1;
+            const lastMonthDays = new Date(targetDate.getFullYear(), targetDate.getMonth(), 0).getDate();
+            days += lastMonthDays;
+        }
+        if (months < 0) months += 12;
+
+        return { totalDays, months, weeks, days, hours, totalHours };
+    }
 
     function updateCountdowns(isGridView) {
         console.log("🔄 Updating countdowns...");
@@ -34,32 +58,29 @@ document.addEventListener("DOMContentLoaded", function () {
                 return;
             }
 
-            const timeDiff = targetDate - now;
-            if (timeDiff < 0) {
+            const countdown = getExactCountdown(targetDate);
+            if (!countdown) {
                 console.log(`⏳ ${title} has already passed.`);
                 return;
-            }
-
-            let months = Math.floor(timeDiff / (1000 * 60 * 60 * 24 * 30));
-            let weeks = Math.floor((timeDiff % (1000 * 60 * 60 * 24 * 30)) / (1000 * 60 * 60 * 24 * 7));
-            let days = Math.floor((timeDiff % (1000 * 60 * 60 * 24 * 7)) / (1000 * 60 * 60 * 24));
-            let hours = Math.floor((timeDiff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-
-            if (isGridView) {
-                // Convert months and weeks to total days
-                days += months * 30 + weeks * 7;
-                months = 0;
-                weeks = 0;
             }
 
             document.querySelectorAll(".countdownContainer").forEach(container => {
                 const h5 = container.querySelector("h5");
 
                 if (h5 && h5.textContent.trim() === title) {
-                    container.querySelector(".months").innerHTML = isGridView ? "" : `<div class="timerValue">${months}</div> <div class="timerLabel">Months</div>`;
-                    container.querySelector(".weeks").innerHTML = isGridView ? "" : `<div class="timerValue">${weeks}</div> <div class="timerLabel">Weeks</div>`;
-                    container.querySelector(".days").innerHTML = `<div class="timerValue">${days}</div> <div class="timerLabel">Days</div>`;
-                    container.querySelector(".hours").innerHTML = isGridView ? "" : `<div class="timerValue">${hours}</div> <div class="timerLabel">Hours</div>`;
+                    if (isGridView) {
+                        // Grid View: Show only total days
+                        container.querySelector(".months").innerHTML = "";
+                        container.querySelector(".weeks").innerHTML = "";
+                        container.querySelector(".days").innerHTML = `<div class="timerValue">${countdown.totalDays}</div> <div class="timerLabel">Days</div>`;
+                        container.querySelector(".hours").innerHTML = `<div class="timerValue">${countdown.totalHours}</div> <div class="timerLabel">Hours</div>`;
+                    } else {
+                        // List View: Show months, weeks, days, and hours separately
+                        container.querySelector(".months").innerHTML = `<div class="timerValue">${countdown.months}</div> <div class="timerLabel">Months</div>`;
+                        container.querySelector(".weeks").innerHTML = `<div class="timerValue">${countdown.weeks}</div> <div class="timerLabel">Weeks</div>`;
+                        container.querySelector(".days").innerHTML = `<div class="timerValue">${countdown.days}</div> <div class="timerLabel">Days</div>`;
+                        container.querySelector(".hours").innerHTML = `<div class="timerValue">${countdown.hours}</div> <div class="timerLabel">Hours</div>`;
+                    }
                 }
             });
         });
