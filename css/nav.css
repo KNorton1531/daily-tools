@@ -1,0 +1,142 @@
+.material-symbols-outlined{
+    font-size: 32px;
+  }
+  
+  body {
+    margin: 0;
+    font-family: "Poppins", serif;
+    font-weight: 300;
+    letter-spacing: 2px;
+  }
+  
+  .side-panel {
+    width: 275px;
+    height: 100vh;
+    position: fixed;
+    left: -280px;
+    top: 0;
+    background: #333;
+    color: white;
+    transition: left 0.2s;
+    z-index: 99;
+  }
+  .side-panel.open {
+    left: 0;
+  }
+  .burger-menu {
+    position: absolute;
+    left: 250px;
+    top: 0;
+    border: none;
+    padding: 15px;
+    cursor: pointer;
+    background: none;
+  }
+  .side-panel .burger-menu {
+    left: auto;
+    right: -62px;
+  }
+  
+  .menuContent {
+    flex: 1;
+    overflow-y: auto;
+    max-height: calc(100vh - 50px);/
+  }
+  
+  .menuContent::-webkit-scrollbar {
+    width: 6px;
+  }
+  
+  .menuContent::-webkit-scrollbar-track {
+    background: #222;
+    border-radius: 10px;
+  }
+  
+  .menuContent::-webkit-scrollbar-thumb {
+    background: #777;
+    border-radius: 10px;
+    transition: background 0.3s;
+  }
+  
+  .menuGroup{
+   overflow-y: auto;
+  }
+  
+  .menuGroup h4{
+    
+  }
+  
+  .menuGroup a{
+    border-top: solid 1px #4f4f4f;
+    display: flex;
+    cursor: pointer;
+    align-items: center;
+  }
+  
+  .menuGroup a:hover{
+    background: #4f4f4f;
+  }
+  
+  .menuGroup a:last-of-type{
+    border-bottom: solid 1px #4f4f4f;
+  }
+  
+  .menuGroup p{
+    margin: 0;
+    padding: 0.7rem 0.5rem;
+    font-size: 0.8rem;
+  }
+  
+  .menuGroup span{
+    margin-left: 1rem;
+  }
+  
+  .navHeader{
+    padding: 0 1rem;
+  }
+  
+  .completeStatus{
+    height: 5px;
+    width: 5px;
+    border-radius: 50%;
+    background: #59c559;
+  }
+  
+  .inProgressStatus{
+    height: 5px;
+    width: 5px;
+    border-radius: 50%;
+    background: #ff9f38;
+  }
+  
+  .notStartedStatus{
+    height: 5px;
+    width: 5px;
+    border-radius: 50%;
+    background: red;
+  }
+  
+  .keyItem{
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    margin-bottom: 0.5rem;
+  }
+  
+  .menuGroup .keyItem p{
+    margin: 0;
+    font-size: 0.7rem;
+    padding: 0;
+  }
+  
+  .keyContainer{
+    padding: 0 1rem;
+    user-select: none;
+  }
+  
+  .menuGroup .keyTitle{
+    margin-bottom: 0.5rem;
+    margin-top: 1rem;
+    font-size: 0.9rem;
+    padding: 0;
+  }

@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KN Daily | Weather </title>
+    <link rel="stylesheet" href="css/nav.css">
+    <link rel="stylesheet" href="css/weather.css">
+
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div id="sidePanel" class="side-panel">
+        <button class="burger-menu" onclick="togglePanel(event)">
+          <span class="material-symbols-outlined">menu</span>
+        </button>
+        <p class="navHeader">KN | Daily Tools</p>
+        <div class="menuContent">
+          <div class="menuGroup">
+            <a>
+              <span class="material-symbols-outlined">cloud</span>
+              <p>Weather</p>
+              <div class="completeStatus"></div>
+            </a>
+            <a>
+              <span class="material-symbols-outlined">schedule</span>
+              <p>Countdowns</p>
+              <div class="inProgressStatus"></div>
+            </a>
+            <a>
+              <span class="material-symbols-outlined">bookmark</span>
+              <p>Bookmarks</p>
+              <div class="notStartedStatus"></div>
+            </a>
+            <a>
+              <span class="material-symbols-outlined">Headphones</span>
+              <p>Lo-Fi Player</p>
+              <div class="notStartedStatus"></div>
+            </a>
+            <a>
+              <span class="material-symbols-outlined">Calculate</span>
+              <p>Calculators</p>
+              <div class="notStartedStatus"></div>
+            </a>
+            
+            <a>
+              <span class="material-symbols-outlined">Travel</span>
+              <p>Flight Tracking</p>
+              <div class="notStartedStatus"></div>
+            </a>
+      
+            <div class="keyContainer">
+              <p class="keyTitle">Key</p>
+              <div class="keyItem">
+                <div class="completeStatus"></div>
+                <p>Complete</p>
+              </div>
+              <div class="keyItem">
+                <div class="inProgressStatus"></div>
+                <p>In Progress</p>
+              </div>
+              <div class="keyItem">
+                <div class="notStartedStatus"></div>
+                <p>Planned</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+
+      <div class="page"> 
+        <div class="content">
+            <div class="timeContainer">
+                <div class="locationTitle">
+                    <h2>Loading Location...</h2>
+                    <h4>Loading City...</h4>
+                </div>
+                
+                <div class="sunTimes">
+                    <div class="sunrise">00:00am</div>
+                    <div class="sunset">00:00pm</div>
+                </div>
+            </div>
+            
+            <div class="localInfo">
+                <div class="weekContainer">
+                    <div class="currentDay">
+                        <!-- Skies -->
+                        <img id="sundown" class="sky" src="assets/sundownDay.png" alt="" style="display: none;">
+                        <img id="afternoon" class="sky" src="assets/afternoonDay.png" alt="" style="display: none;">
+                        <img id="midnight" class="sky" src="assets/midnightNight.png" alt="" style="display: none;">
+                        <img id="low" class="sky" src="assets/lowNight.png" alt="" style="display: none;">
+                
+                        <!-- Clouds -->
+                        <img id="lightClouds" class="cloud" src="assets/clouds.png" alt="" style="display: none;">
+                        <img id="heavyClouds" class="cloud" src="assets/heavyClouds.png" alt="" style="display: none;">
+                        
+                        <div id="rainEffect" class="rain" style="display: none;"></div>
+                
+                        <div class="dayContainer"></div>
+                    </div>
+                
+                    <div class="forecast">
+                        <div class="dayContainer">
+                
+                        </div>
+                
+                        <div class="dayContainer">
+                    </div>
+                
+                    </div>
+                </div>
+                <div class="currentData">
+                    <div class="infoPanel"></div>
+                    <div class="infoPanel"></div>
+                    <div class="infoPanel"></div>
+                    <div class="infoPanel"></div>
+                    <div class="tillSeason"></div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+
+      <script src="scripts/nav.js"></script>
+      <script src="scripts/weather.js"></script>
+</body>
+</html>
