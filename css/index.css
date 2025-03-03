@@ -1,0 +1,17 @@
+*{
+    box-sizing: border-box;
+}
+
+html {
+   margin: 0px;
+   height: 100%;
+   width: 100%;
+   overflow-y: scroll;
+}
+
+body{
+	height: 100%;
+	margin: 0;
+	padding: 1rem;
+	font-family: "Gill Sans", sans-serif;
+}

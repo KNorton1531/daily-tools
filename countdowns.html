@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KN Daily | Countdowns </title>
+    <link rel="stylesheet" href="css/nav.css">
+    <link rel="stylesheet" href="css/countdowns.css">
+    <link rel="stylesheet" href="css/index.css">
+
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div id="sidePanel" class="side-panel">
+        <button class="burger-menu" onclick="togglePanel(event)">
+          <span class="material-symbols-outlined">menu</span>
+        </button>
+        <p class="navHeader">KN | Daily Tools</p>
+        <div class="menuContent">
+          <div class="menuGroup">
+            <a href="index.html">
+              <span class="material-symbols-outlined">cloud</span>
+              <p>Weather</p>
+              <div class="completeStatus"></div>
+            </a>
+            <a href="countdowns.html">
+              <span class="material-symbols-outlined">schedule</span>
+              <p>Countdowns</p>
+              <div class="inProgressStatus"></div>
+            </a>
+            <a>
+              <span class="material-symbols-outlined">bookmark</span>
+              <p>Bookmarks</p>
+              <div class="notStartedStatus"></div>
+            </a>
+            <a>
+              <span class="material-symbols-outlined">Headphones</span>
+              <p>Lo-Fi Player</p>
+              <div class="notStartedStatus"></div>
+            </a>
+            <a>
+              <span class="material-symbols-outlined">Calculate</span>
+              <p>Calculators</p>
+              <div class="notStartedStatus"></div>
+            </a>
+            
+            <a>
+              <span class="material-symbols-outlined">Travel</span>
+              <p>Flight Tracking</p>
+              <div class="notStartedStatus"></div>
+            </a>
+      
+            <div class="keyContainer">
+              <p class="keyTitle">Key</p>
+              <div class="keyItem">
+                <div class="completeStatus"></div>
+                <p>Complete</p>
+              </div>
+              <div class="keyItem">
+                <div class="inProgressStatus"></div>
+                <p>In Progress</p>
+              </div>
+              <div class="keyItem">
+                <div class="notStartedStatus"></div>
+                <p>Planned</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="sortBar">
+          <div class="sortTitle">Sort Options</div>
+          <div class="sortItems">
+            <span class="material-symbols-outlined gridButton">grid_view</span>
+            <span class="material-symbols-outlined listButton">view_list</span>
+          </div>
+        </div>
+
+        <div class="categoryContainer gridView">
+          <div class="category">
+            <h3>Seasonal</h3>
+            <div class="countdownWrapper">
+              <div class="countdownContainer Spring">
+                <h5>Spring</h5>
+                <div class="timers">
+                  <div class="months"></div>
+                  <div class="weeks"></div>
+                  <div class="days"></div>
+                  <div class="hours"></div>
+                </div>
+              </div>
+              <div class="countdownContainer Summer">
+                <h5>Summer</h5>
+                <div class="timers">
+                  <div class="months"></div>
+                  <div class="weeks"></div>
+                  <div class="days"></div>
+                  <div class="hours"></div>
+                </div>
+              </div>
+              <div class="countdownContainer Autumn">
+                <h5>Autumn</h5>
+                <div class="timers">
+                  <div class="months"></div>
+                  <div class="weeks"></div>
+                  <div class="days"></div>
+                  <div class="hours"></div>
+                </div>
+              </div>
+              <div class="countdownContainer Winter">
+                <h5>Winter</h5>
+                <div class="timers">
+                  <div class="months"></div>
+                  <div class="weeks"></div>
+                  <div class="days"></div>
+                  <div class="hours"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="category">
+            <h3>Holidays</h3>
+            <div class="countdownWrapper">
+              <div class="countdownContainer Christmas">
+                <h5>Christmas</h5>
+                <div class="timers">
+                  <div class="months"></div>
+                  <div class="weeks"></div>
+                  <div class="days"></div>
+                  <div class="hours"></div>
+                </div>
+              </div>
+              <div class="countdownContainer December">
+                <h5>December</h5>
+                <div class="timers">
+                  <div class="months"></div>
+                  <div class="weeks"></div>
+                  <div class="days"></div>
+                  <div class="hours"></div>
+                </div>
+              </div>
+              <div class="countdownContainer Halloween">
+                <h5>Halloween</h5>
+                <div class="timers">
+                  <div class="months"></div>
+                  <div class="weeks"></div>
+                  <div class="days"></div>
+                  <div class="hours"></div>
+                </div>
+              </div>
+              <div class="countdownContainer Easter">
+                <h5>Easter</h5>
+                <div class="timers">
+                  <div class="months"></div>
+                  <div class="weeks"></div>
+                  <div class="days"></div>
+                  <div class="hours"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="category">
+            <h3>Holidays</h3>
+            <div class="countdownWrapper">
+              <div class="countdownContainer Christmas">
+                <h5>Christmas</h5>
+                <div class="timers">
+                  <div class="months"></div>
+                  <div class="weeks"></div>
+                  <div class="days"></div>
+                  <div class="hours"></div>
+                </div>
+              </div>
+              <div class="countdownContainer December">
+                <h5>December</h5>
+                <div class="timers">
+                  <div class="months"></div>
+                  <div class="weeks"></div>
+                  <div class="days"></div>
+                  <div class="hours"></div>
+                </div>
+              </div>
+              <div class="countdownContainer Halloween">
+                <h5>Halloween</h5>
+                <div class="timers">
+                  <div class="months"></div>
+                  <div class="weeks"></div>
+                  <div class="days"></div>
+                  <div class="hours"></div>
+                </div>
+              </div>
+              <div class="countdownContainer Easter">
+                <h5>Easter</h5>
+                <div class="timers">
+                  <div class="months"></div>
+                  <div class="weeks"></div>
+                  <div class="days"></div>
+                  <div class="hours"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          
+        </div>
+        </div>
+
+      </div>
+
+
+    <script src="scripts/nav.js"></script>
+    <script src="scripts/countdowns.js"></script>
+</body>

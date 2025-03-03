@@ -71,6 +71,7 @@
     display: flex;
     cursor: pointer;
     align-items: center;
+    color: #fff;
   }
   
   .menuGroup a:hover{

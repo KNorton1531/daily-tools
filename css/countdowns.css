@@ -1,0 +1,133 @@
+.content{
+    padding: 0 4rem;
+    background: #f3f3f3;
+    margin: 1rem 4rem;
+    padding: 1rem;
+    border-radius: 6px; 
+    box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+    letter-spacing: 1px;
+}
+
+.sortBar{
+    width: 100%;
+    background: #e7e7e7;
+    border-radius: 6px;
+    margin-bottom: 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.sortItems span{
+    background-color: #fff;
+    padding: 0.5rem;
+    border-radius: 6px;
+    user-select: none;
+}
+
+.sortItems .gridButton{
+    background: #c5c5c5;
+}
+
+.sortItems span:hover{
+    background-color: #c5c5c5;
+    cursor: pointer;
+}
+
+.sortItems{
+    display: flex;
+    gap: 0.5rem;
+    justify-content: flex-end;
+    align-items: center;
+    padding: 1rem;
+}
+
+.sortTitle{
+    padding: 1rem;
+}
+
+.category{
+    background: #e7e7e7;  
+    padding: 1rem;
+    margin-bottom: 1rem;
+    width: 100%;
+}
+
+.countdownContainer{
+    background: #fff;
+    padding: 1rem;
+    border-radius: 6px;
+}
+
+.countdownContainer h5{
+    font-size: 1.5rem;
+    margin: 0;
+    margin-bottom: 1rem;
+}
+
+.countdownWrapper{
+    display: flex;
+    gap: 1rem;
+    flex-direction: row;
+    flex-wrap: wrap;
+}
+
+.timers{
+    display: flex;
+    gap: 1rem;
+}
+
+.months, .weeks, .days, .hours, .minutes{
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    border-radius: 6px;
+    background: #f3f3f3;
+}
+
+.timerValue{
+    font-size: 2rem;
+}
+
+.timerLabel{
+    font-size: 0.8rem;
+}
+
+/* Grid View */
+
+.gridView{
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.gridView .category{
+    background: #e7e7e7;
+    padding: 1rem;
+    border-radius: 6px;
+    width: max-content  ;
+}
+
+.gridView .category .countdownWrapper{
+    flex-direction: row;
+    width: max-content;
+}
+
+.gridView .hours{
+    display: none;
+}
+
+.gridView .months{
+    display: none; 
+}
+
+.gridView .weeks{
+    display: none;
+}
+
+.gridView .countdownContainer h5{
+    font-size: 1rem;
+}
