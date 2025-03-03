@@ -193,11 +193,12 @@ async function updateWeatherDisplay() {
     }
 }
 
+// In the future have the sunset images go off location, not set times.
 function setTimeOfDay(hour) {
     document.querySelectorAll('.sky').forEach(img => img.style.display = 'none');
     if (hour >= 18 || hour < 6) {
         document.getElementById(hour >= 0 && hour < 4 ? 'midnight' : 'low').style.display = 'block';
-    } else if (hour >= 12 && hour < 18) {
+    } else if (hour >= 10 && hour < 18) {
         document.getElementById('afternoon').style.display = 'block';
     } else {
         document.getElementById('sundown').style.display = 'block';
