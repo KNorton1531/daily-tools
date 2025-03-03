@@ -246,6 +246,7 @@ body{
     background: rgba(255, 255, 255, 0.6);
     animation: fall linear infinite;
 }
+
 @keyframes fall {
     from {
         transform: translateY(-100%);
@@ -255,10 +256,86 @@ body{
     }
 }
 
+.content.rovaniemi{
+    display: flex;
+    flex-direction: column;
+    margin-top: 2rem;
+}
+
+.customTitle{
+    display: flex;
+    flex-direction: column;
+}
+
+.customTitle h4, .customTitle h2{
+    margin: 0;
+}
+
+.customTitle h4{
+    font-size: 0.8rem;
+}
+
+.customPlaceCurrent{
+    border: solid 1px green;
+}
+
+.customPlaceForecast{
+    display: flex;
+    gap: 1rem;
+    padding: 1rem;
+    background: #e7e7e7;
+    width: max-content;
+    border-radius: 6px;
+}
+
+.dayCustomContainer{
+    background: #fff;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    padding: 1rem;
+    flex-direction: column;
+}
+
+.dayCustomContainer .temp{
+    white-space: nowrap;
+}
+
+.customData{
+    display: flex;
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.customData .currentData{
+    margin: 0;
+    display: flex;
+}
+
+.topBanner{
+    display: flex;
+    justify-content: space-between;
+}
+
+/* Custom */
+@media (max-width:1250px) {
+    .customData{
+        flex-direction: column;
+    }
+
+    .customData .infoPanel{
+        padding: 1rem;
+    }
+    
+    .customData .currentData{
+        flex-direction: row;
+    }
+}
+
 /* Tablet */
 @media (max-width:1025px){
     .localInfo{
-
+        flex-direction: column;
     }
 
     .weekContainer{
@@ -271,16 +348,23 @@ body{
         height: 150px;
         padding: 2rem 0;
         width: 100%;
+        max-width: 100%;
     }
 
     .currentData{
         display: flex;
         flex-direction: column;
         width: auto;
+        align-items: center;
     }
 
     .tillSeason{
         height: auto;
+    }
+
+    .customData .currentData{
+        max-width: 100%;
+        flex-wrap: wrap;
     }
 }
 

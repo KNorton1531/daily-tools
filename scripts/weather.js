@@ -230,3 +230,167 @@ function stopRainEffect() {
 }
 
 updateWeatherDisplay();
+
+async function fetchWeatherForRovaniemi() {
+    try {
+        const lat = 66.5;  // Latitude for Rovaniemi, Finland
+        const lon = 25.7;  // Longitude for Rovaniemi, Finland
+        const weatherApiKey = "987aae377eb04262b64105333252502";
+        const weatherUrl = `https://api.weatherapi.com/v1/forecast.json?key=${weatherApiKey}&q=${lat},${lon}&days=3&aqi=no&alerts=no`;
+        const weatherRes = await fetch(weatherUrl);
+
+        if (!weatherRes.ok) {
+            throw new Error(`Weather API request failed: ${weatherRes.status}`);
+        }
+
+        const weatherData = await weatherRes.json();
+        console.log("Weather API response:", weatherData);
+
+        if (!weatherData.location) {
+            throw new Error("Failed to retrieve location from weather data.");
+        }
+
+        // Update location info
+        document.querySelector(".rovaniemi .customTitle h2").textContent = "Rovaniemi";
+        document.querySelector(".rovaniemi .customTitle h4").textContent = "Finland";
+
+        if (!weatherData.forecast || !weatherData.forecast.forecastday) {
+            throw new Error("Failed to retrieve weather forecast data.");
+        }
+
+        // Update sunrise and sunset times
+        const todayForecast = weatherData.forecast.forecastday[0];
+        const sunriseTime = todayForecast.astro.sunrise;
+        const sunsetTime = todayForecast.astro.sunset;
+        document.querySelector(".rovaniemi .sunrise").innerHTML = `<span class="material-symbols-outlined">wb_twilight</span> ${sunriseTime}`;
+        document.querySelector(".rovaniemi .sunset").innerHTML = `<span class="material-symbols-outlined">routine</span> ${sunsetTime}`;
+
+        // Update current weather details
+        const currentWeather = weatherData.current;
+        const currentTemp = Math.round(currentWeather.temp_c);
+        const windSpeed = Math.round(currentWeather.wind_kph); // Using kph since Finland uses metric
+        const feelsLike = Math.round(currentWeather.feelslike_c);
+        const cloudCoverage = currentWeather.cloud;
+        const currentDesc = currentWeather.condition.text;
+
+        // Ensure the info panels exist before updating
+        const infoPanels = document.querySelectorAll(".rovaniemi .currentData .infoPanel");
+
+        if (infoPanels && infoPanels.length >= 4) {
+            infoPanels[0].innerHTML = `<p>Current Temp</p><span>${currentTemp}°C</span>`;
+            infoPanels[1].innerHTML = `<p>Wind Speed</p><span>${windSpeed} kph</span>`;
+            infoPanels[2].innerHTML = `<p>Feels Like</p><span>${feelsLike}°C</span>`;
+            infoPanels[3].innerHTML = `<p>Cloud Cover</p><span>${cloudCoverage}%</span>`;
+        } else {
+            console.warn("Info panels not found or insufficient panels available.");
+        }
+
+        // Update forecast containers for the next three days
+        const forecastContainers = document.querySelectorAll(".rovaniemi .customPlaceForecast .dayCustomContainer");
+        weatherData.forecast.forecastday.forEach((forecastDay, index) => {
+            if (forecastContainers[index]) {
+                const forecastDate = new Date(forecastDay.date);
+                const forecastDayName = forecastDate.toLocaleDateString("en-US", { weekday: "short" });
+                const forecastMinTemp = Math.round(forecastDay.day.mintemp_c);
+                const forecastMaxTemp = Math.round(forecastDay.day.maxtemp_c);
+                const forecastIcon = forecastDay.day.condition.icon;
+                const forecastDesc = forecastDay.day.condition.text;
+
+                forecastContainers[index].innerHTML = `
+                    <div class="day">${forecastDayName}</div>
+                    <img src="https:${forecastIcon}" alt="${forecastDesc}" title="${forecastDesc}">
+                    <div class="temp">${forecastMinTemp}°C / ${forecastMaxTemp}°C</div>
+                `;
+            }
+        });
+    } catch (error) {
+        console.error("Error fetching weather data:", error);
+        document.querySelector(".rovaniemi .customPlaceForecast").innerHTML = `<p>Failed to load weather data.</p>`;
+    }
+}
+
+// Call the function to fetch Rovaniemi weather
+document.addEventListener("DOMContentLoaded", fetchWeatherForRovaniemi);
+
+
+async function fetchWeatherForGlasgow() {
+    try {
+        const lat = 55.8;  // Latitude for Rovaniemi, Finland
+        const lon = -4.25;  // Longitude for Rovaniemi, Finland
+        const weatherApiKey = "987aae377eb04262b64105333252502";
+        const weatherUrl = `https://api.weatherapi.com/v1/forecast.json?key=${weatherApiKey}&q=${lat},${lon}&days=3&aqi=no&alerts=no`;
+        const weatherRes = await fetch(weatherUrl);
+
+        if (!weatherRes.ok) {
+            throw new Error(`Weather API request failed: ${weatherRes.status}`);
+        }
+
+        const weatherData = await weatherRes.json();
+        console.log("Weather API response:", weatherData);
+
+        if (!weatherData.location) {
+            throw new Error("Failed to retrieve location from weather data.");
+        }
+
+        // Update location info
+        document.querySelector(".Glasgow .customTitle h2").textContent = "Glasgow";
+        document.querySelector(".Glasgow .customTitle h4").textContent = "Scotland";
+
+        if (!weatherData.forecast || !weatherData.forecast.forecastday) {
+            throw new Error("Failed to retrieve weather forecast data.");
+        }
+
+        // Update sunrise and sunset times
+        const todayForecast = weatherData.forecast.forecastday[0];
+        const sunriseTime = todayForecast.astro.sunrise;
+        const sunsetTime = todayForecast.astro.sunset;
+        document.querySelector(".Glasgow .sunrise").innerHTML = `<span class="material-symbols-outlined">wb_twilight</span> ${sunriseTime}`;
+        document.querySelector(".Glasgow .sunset").innerHTML = `<span class="material-symbols-outlined">routine</span> ${sunsetTime}`;
+
+        // Update current weather details
+        const currentWeather = weatherData.current;
+        const currentTemp = Math.round(currentWeather.temp_c);
+        const windSpeed = Math.round(currentWeather.wind_kph); // Using kph since Finland uses metric
+        const feelsLike = Math.round(currentWeather.feelslike_c);
+        const cloudCoverage = currentWeather.cloud;
+        const currentDesc = currentWeather.condition.text;
+
+        // Ensure the info panels exist before updating
+        const infoPanels = document.querySelectorAll(".Glasgow .currentData .infoPanel");
+
+        if (infoPanels && infoPanels.length >= 4) {
+            infoPanels[0].innerHTML = `<p>Current Temp</p><span>${currentTemp}°C</span>`;
+            infoPanels[1].innerHTML = `<p>Wind Speed</p><span>${windSpeed} kph</span>`;
+            infoPanels[2].innerHTML = `<p>Feels Like</p><span>${feelsLike}°C</span>`;
+            infoPanels[3].innerHTML = `<p>Cloud Cover</p><span>${cloudCoverage}%</span>`;
+        } else {
+            console.warn("Info panels not found or insufficient panels available.");
+        }
+
+        // Update forecast containers for the next three days
+        const forecastContainers = document.querySelectorAll(".Glasgow .customPlaceForecast .dayCustomContainer");
+        weatherData.forecast.forecastday.forEach((forecastDay, index) => {
+            if (forecastContainers[index]) {
+                const forecastDate = new Date(forecastDay.date);
+                const forecastDayName = forecastDate.toLocaleDateString("en-US", { weekday: "short" });
+                const forecastMinTemp = Math.round(forecastDay.day.mintemp_c);
+                const forecastMaxTemp = Math.round(forecastDay.day.maxtemp_c);
+                const forecastIcon = forecastDay.day.condition.icon;
+                const forecastDesc = forecastDay.day.condition.text;
+
+                forecastContainers[index].innerHTML = `
+                    <div class="day">${forecastDayName}</div>
+                    <img src="https:${forecastIcon}" alt="${forecastDesc}" title="${forecastDesc}">
+                    <div class="temp">${forecastMinTemp}°C / ${forecastMaxTemp}°C</div>
+                `;
+            }
+        });
+    } catch (error) {
+        console.error("Error fetching weather data:", error);
+        document.querySelector(".Glasgow .customPlaceForecast").innerHTML = `<p>Failed to load weather data.</p>`;
+    }
+}
+
+// Call the function to fetch Rovaniemi weather
+document.addEventListener("DOMContentLoaded", fetchWeatherForGlasgow);
+
