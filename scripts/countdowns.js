@@ -9,68 +9,69 @@ document.addEventListener("DOMContentLoaded", function () {
         { title: "Christmas", date: "12-25T00:00:00", annual: true },
         { title: "December", date: "12-01T00:00:00", annual: true },
         { title: "Halloween", date: "10-31T00:00:00", annual: true },
-        { title: "Easter", date: "2025-04-20T00:00:00", annual: false }
+        { title: "Easter", date: "2025-04-20T00:00:00", annual: false },
+        { title: "The Finals Season 6", date: "2025-03-20T10:00:00", annual: false },
+        { title: "My Birthday", date: "04-22T00:00:00", annual: true }
     ];
 
     const categoryContainer = document.querySelector(".categoryContainer");
-    const gridViewBtn = document.querySelector(".sortItems span:nth-child(1)");
-    const listViewBtn = document.querySelector(".sortItems span:nth-child(2)");
+    const favoritesContainer = document.querySelector(".favoritesCategory .countdownWrapper");
+    const favoritesCategory = document.querySelector(".favoritesCategory");
+    const gridViewBtn = document.querySelector(".gridButton");
+    const listViewBtn = document.querySelector(".listButton");
+
+    let favoriteCountdowns = JSON.parse(localStorage.getItem("favorites")) || [];
 
     function getExactCountdown(targetDate, isGridView) {
         const now = new Date();
         let timeDiff = targetDate - now;
-    
-        if (timeDiff < 0) return null; // Event has passed
-    
-        // Use Math.ceil() for grid view to include today, but Math.floor() for list view
+
+        if (timeDiff < 0) return null; 
+
         const totalDays = isGridView
-            ? Math.ceil(timeDiff / (1000 * 60 * 60 * 24)) // Include today
-            : Math.floor(timeDiff / (1000 * 60 * 60 * 24)); // Normal calculation
-    
+            ? Math.ceil(timeDiff / (1000 * 60 * 60 * 24))
+            : Math.floor(timeDiff / (1000 * 60 * 60 * 24));
         const totalHours = Math.floor((timeDiff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
         const totalMinutes = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
         const totalSeconds = Math.floor((timeDiff % (1000 * 60)) / 1000);
-    
+
         return { totalDays, totalHours, totalMinutes, totalSeconds };
     }
-       
 
     function updateCountdowns(isGridView) {
         console.log("🔄 Updating countdowns...");
-    
+
         countdowns.forEach(({ title, date, annual }) => {
             const now = new Date();
             let targetDate = new Date(`${now.getFullYear()}-${date}`);
-    
+
             if (annual && targetDate < now) {
                 targetDate = new Date(`${now.getFullYear() + 1}-${date}`);
             } else if (!annual) {
                 targetDate = new Date(date);
             }
-    
+
             if (isNaN(targetDate.getTime())) {
                 console.error(`❌ Invalid date for "${title}": ${date}`);
                 return;
             }
-    
+
             const countdown = getExactCountdown(targetDate, isGridView);
             if (!countdown) {
                 console.log(`⏳ ${title} has already passed.`);
                 return;
             }
-    
+
             document.querySelectorAll(".countdownContainer").forEach(container => {
                 const h5 = container.querySelector("h5");
-    
+
                 if (h5 && h5.textContent.trim() === title) {
                     if (isGridView) {
-                        // Grid View: Show only total days, including today
                         container.querySelector(".days").innerHTML = `
                             <div class="timerValue">${countdown.totalDays}</div> 
                             <div class="timerLabel">Days</div>`;
                         container.querySelector(".hours").innerHTML = "";
                     } else {
-                        // List View: Show days, hours, minutes, and seconds
                         container.querySelector(".days").innerHTML = `
                             <div class="timerValue">${countdown.totalDays}</div> 
                             <div class="timerLabel">Days</div>`;
@@ -87,31 +88,61 @@ document.addEventListener("DOMContentLoaded", function () {
                 }
             });
         });
-    
+
         console.log("✅ Countdowns updated");
     }
-    
 
     function toggleView(isGrid) {
-        if (isGrid) {
-            categoryContainer.classList.add("gridView");
-            categoryContainer.classList.remove("listView");
-            document.querySelector(".gridButton").style.background = "#c5c5c5";
-            document.querySelector(".listButton").style.background = "#fff";
-        } else {
-            categoryContainer.classList.add("listView");
-            categoryContainer.classList.remove("gridView");
-            document.querySelector(".listButton").style.background = "#c5c5c5";
-            document.querySelector(".gridButton").style.background = "#fff";
-        }
-
+        categoryContainer.classList.toggle("gridView", isGrid);
+        categoryContainer.classList.toggle("listView", !isGrid);
+        document.querySelector(".gridButton").style.background = isGrid ? "#c5c5c5" : "#fff";
+        document.querySelector(".listButton").style.background = isGrid ? "#fff" : "#c5c5c5";
         updateCountdowns(isGrid);
     }
+
+    function toggleFavorite(title) {
+        const index = favoriteCountdowns.indexOf(title);
+
+        if (index === -1) {
+            favoriteCountdowns.push(title);
+        } else {
+            favoriteCountdowns.splice(index, 1);
+        }
+
+        localStorage.setItem("favorites", JSON.stringify(favoriteCountdowns));
+        updateFavorites();
+    }
+
+    function updateFavorites() {
+        favoritesContainer.innerHTML = "";
+    
+        favoriteCountdowns.forEach(title => {
+            const originalCountdown = Array.from(document.querySelectorAll(".countdownContainer")).find(container => 
+                container.querySelector("h5")?.textContent.trim() === title
+            );
+    
+            if (originalCountdown) {
+                const clone = originalCountdown.cloneNode(true);
+                clone.classList.add("favorite");
+                clone.addEventListener("click", () => toggleFavorite(title));
+                favoritesContainer.appendChild(clone);
+            }
+        });
+    
+        favoritesCategory.style.display = favoriteCountdowns.length > 0 ? "block" : "none";
+    }    
+
+    document.querySelectorAll(".countdownContainer").forEach(container => {
+        container.addEventListener("click", function () {
+            const title = this.querySelector("h5").textContent.trim();
+            toggleFavorite(title);
+        });
+    });
 
     gridViewBtn.addEventListener("click", () => toggleView(true));
     listViewBtn.addEventListener("click", () => toggleView(false));
 
-    // Initial load
     updateCountdowns(false);
+    updateFavorites();
     setInterval(() => updateCountdowns(categoryContainer.classList.contains("gridView")), 1000);
 });

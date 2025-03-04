@@ -59,6 +59,10 @@
     width: 100%;
 }
 
+.favoritesCategory{
+    width: 100%;
+}
+
 .countdownContainer{
     background: #fff;
     padding: 1rem;
@@ -92,6 +96,7 @@
     padding: 1rem;
     border-radius: 6px;
     background: #f3f3f3;
+    width: 100%;
 }
 
 .timerValue{
@@ -115,6 +120,10 @@
     padding: 1rem;
     border-radius: 6px;
     width: max-content  ;
+}
+
+.gridView .category.favoritesCategory{
+    width: 100%;
 }
 
 .gridView .category .countdownWrapper{
