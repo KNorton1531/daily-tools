@@ -64,17 +64,36 @@
     margin-top: 0;
 }
 
+.listView .favoritesCategory .countdownContainer{
+    width: 100%;
+}
+
 .favoritesCategory{
     width: 100%;
 }
 
 .favoritesCategory h3{
     margin-bottom: 0.5rem;
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.favoritesCategory h3 span{
+    background: #fff;
+    padding: 0.2rem;
+    border-radius: 6px;
+    user-select: none;
+    cursor: pointer;
 }
 
 .addMessage{
     font-size: 0.8rem;
     margin-top: 0;
+}
+
+.sortingMessage{
+    font-size: 0.8rem;
 }
 
 .countdownContainer{
