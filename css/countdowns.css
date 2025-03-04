@@ -5,9 +5,8 @@
   }
 
 .content{
-    padding: 0 auto;
     background: #f3f3f3;
-    margin: 1rem 4rem;
+    margin: 1rem auto;
     padding: 1rem;
     border-radius: 6px; 
     box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
