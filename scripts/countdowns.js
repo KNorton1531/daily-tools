@@ -24,11 +24,10 @@ document.addEventListener("DOMContentLoaded", function () {
     const listViewBtn = document.querySelector(".listButton");
 
     let favoriteCountdowns = JSON.parse(localStorage.getItem("favorites")) || [];
-
-    // Ensure sorting defaults to "Closest Dates" for first-time users
     let isSortedByTime = localStorage.getItem("favoritesSorting") !== null 
         ? JSON.parse(localStorage.getItem("favoritesSorting")) 
-        : true; // Default to Closest Dates
+        : true;
+    let isGridView = localStorage.getItem("isGridView") === "true";
 
     function getExactCountdown(targetDate, isGridView) {
         const now = new Date();
@@ -57,15 +56,11 @@ document.addEventListener("DOMContentLoaded", function () {
             let targetDate;
 
             if (event.annual) {
-                // Annual events assume the current year
                 targetDate = new Date(`${now.getFullYear()}-${event.date}`);
-
-                // If the event has already passed this year, move it to next year
                 if (targetDate < now) {
                     targetDate = new Date(`${now.getFullYear() + 1}-${event.date}`);
                 }
             } else {
-                // Non-annual events use the specified year
                 targetDate = new Date(event.date);
             }
 
@@ -78,25 +73,38 @@ document.addEventListener("DOMContentLoaded", function () {
             if (originalCountdown) {
                 const clone = originalCountdown.cloneNode(true);
                 clone.classList.add("favorite");
-                clone.addEventListener("click", () => toggleFavorite(title));
+
+                // ✅ Clicking a favorite should remove it
+                clone.addEventListener("click", function () {
+                    toggleFavorite(title);
+                });
 
                 return { element: clone, timeDiff };
             }
             return null;
         }).filter(item => item !== null);
 
-        // Apply sorting: Closest first if sorted, otherwise furthest first
         favoriteElements.sort((a, b) => isSortedByTime ? a.timeDiff - b.timeDiff : b.timeDiff - a.timeDiff);
 
-        // Add elements in sorted order
         favoriteElements.forEach(item => favoritesContainer.appendChild(item.element));
 
-        // Show/hide the "addMessage" text based on favorite count
         addMessage.style.display = favoriteCountdowns.length > 0 ? "none" : "block";
 
-        // Ensure the sorting button and message are correct on first load
         sortButton.style.background = isSortedByTime ? "#c5c5c5" : "#fff";
         sortingMessage.textContent = isSortedByTime ? "Closest Dates" : "Furthest Dates";
+    }
+
+    function toggleView(isGrid) {
+        localStorage.setItem("isGridView", isGrid);
+        categoryContainer.classList.remove("gridView", "listView");
+        categoryContainer.classList.add(isGrid ? "gridView" : "listView");
+
+        if (gridViewBtn && listViewBtn) {
+            gridViewBtn.style.background = isGrid ? "#c5c5c5" : "#fff";
+            listViewBtn.style.background = isGrid ? "#fff" : "#c5c5c5";
+        }
+
+        updateCountdowns(isGrid);
     }
 
     function toggleFavorite(title) {
@@ -109,14 +117,13 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
         localStorage.setItem("favorites", JSON.stringify(favoriteCountdowns));
-        updateFavorites(); // Ensure immediate correct ordering when adding/removing
+        updateFavorites();
     }
 
     function toggleSort() {
         isSortedByTime = !isSortedByTime;
         localStorage.setItem("favoritesSorting", JSON.stringify(isSortedByTime));
 
-        // Update the sort button style and message
         sortButton.style.background = isSortedByTime ? "#c5c5c5" : "#fff";
         sortingMessage.textContent = isSortedByTime ? "Closest Dates" : "Furthest Dates";
 
@@ -129,7 +136,6 @@ document.addEventListener("DOMContentLoaded", function () {
         document.querySelectorAll(".countdownContainer").forEach(container => {
             const title = container.querySelector("h5")?.textContent.trim();
             const event = countdowns.find(e => e.title === title);
-
             if (!event) return;
 
             const now = new Date();
@@ -145,7 +151,12 @@ document.addEventListener("DOMContentLoaded", function () {
             if (!countdown) return;
 
             container.querySelector(".days").innerHTML = `<div class="timerValue">${countdown.totalDays}</div><div class="timerLabel">Days</div>`;
-            if (!isGridView) {
+
+            if (isGridView) {
+                container.querySelector(".hours").innerHTML = "";
+                container.querySelector(".minutes").innerHTML = "";
+                container.querySelector(".seconds").innerHTML = "";
+            } else {
                 container.querySelector(".hours").innerHTML = `<div class="timerValue">${countdown.totalHours}</div><div class="timerLabel">Hours</div>`;
                 container.querySelector(".minutes").innerHTML = `<div class="timerValue">${countdown.totalMinutes}</div><div class="timerLabel">Minutes</div>`;
                 container.querySelector(".seconds").innerHTML = `<div class="timerValue">${countdown.totalSeconds}</div><div class="timerLabel">Seconds</div>`;
@@ -156,13 +167,16 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     sortButton.addEventListener("click", toggleSort);
+    if (gridViewBtn) gridViewBtn.addEventListener("click", () => toggleView(true));
+    if (listViewBtn) listViewBtn.addEventListener("click", () => toggleView(false));
+
     document.querySelectorAll(".countdownContainer").forEach(container => {
         container.addEventListener("click", function () {
             toggleFavorite(this.querySelector("h5").textContent.trim());
         });
     });
 
-    updateFavorites();
-    updateCountdowns(false);
+    updateCountdowns(isGridView);
+    toggleView(isGridView);
     setInterval(() => updateCountdowns(categoryContainer.classList.contains("gridView")), 1000);
 });
