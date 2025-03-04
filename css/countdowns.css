@@ -65,7 +65,7 @@
 }
 
 .listView .favoritesCategory .countdownContainer{
-    width: 100%;
+    width: 49%;
 }
 
 .favoritesCategory{
@@ -163,7 +163,7 @@
 
 .gridView .category .countdownWrapper{
     flex-direction: row;
-    width: max-content;
+    width: 100%;
 }
 
 .gridView .hours{
@@ -180,4 +180,28 @@
 
 .gridView .countdownContainer h5{
     font-size: 1rem;
+}
+
+@media (max-width:1025px){
+    .listView .favoritesCategory .countdownContainer{
+        width: 100%;
+    }
+
+    .gridView .countdownContainer{
+        width: 48%;
+    }
+
+    .gridView .favoritesCategory .countdownWrapper{
+        justify-content: center;
+    }
+}
+
+@media (max-width:764px){
+    .page{
+        padding: 1rem;
+    }
+
+    .listView .timers{
+        flex-wrap: wrap;
+    }
 }

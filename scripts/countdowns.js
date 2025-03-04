@@ -178,5 +178,5 @@ document.addEventListener("DOMContentLoaded", function () {
 
     updateCountdowns(isGridView);
     toggleView(isGridView);
-    setInterval(() => updateCountdowns(categoryContainer.classList.contains("gridView")), 1000);
+    setInterval(() => updateCountdowns(categoryContainer.classList.contains("gridView")), 100000);
 });
