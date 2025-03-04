@@ -83,7 +83,7 @@
     gap: 1rem;
 }
 
-.months, .weeks, .days, .hours, .minutes{
+.days, .hours, .minutes, .seconds{
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
@@ -126,11 +126,11 @@
     display: none;
 }
 
-.gridView .months{
+.gridView .minutes{
     display: none; 
 }
 
-.gridView .weeks{
+.gridView .seconds{
     display: none;
 }
 
