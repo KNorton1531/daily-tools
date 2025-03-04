@@ -1,0 +1,33 @@
+.categoryWrapper{
+    display: flex;
+    flex-direction: row;
+    gap: 1rem;
+    flex-wrap: wrap;
+    width: 100%;
+    justify-content: center  ;
+}
+
+.category{
+    padding: 1rem;
+    background: #fff;
+    border-radius: 6px;
+    width: 32%;
+    flex-grow: 1;
+}
+
+.category h1{
+    font-size: 1.5rem;
+}
+
+.openAll{
+    width: 100%;
+    padding: 1rem;
+    background: #f3f3f3;
+    border-radius: 6px;
+    text-align: center;
+    border: solid 1px #dadada;
+}
+
+.openAll:hover{
+    border: solid 1px #9e9e9e;
+}
