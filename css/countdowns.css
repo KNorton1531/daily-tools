@@ -102,12 +102,16 @@
     border-radius: 6px;
     cursor: pointer;
     user-select: none;
+    position: relative;
+    overflow: hidden;
 }
 
 .countdownContainer h5{
     font-size: 1.5rem;
     margin: 0;
     margin-bottom: 1rem;
+    z-index: 2;
+    position: relative;
 }
 
 .countdownWrapper{
@@ -120,6 +124,8 @@
 .timers{
     display: flex;
     gap: 1rem;
+    z-index: 2;
+    position: relative;
 }
 
 .days, .hours, .minutes, .seconds{
@@ -140,6 +146,20 @@
 
 .timerLabel{
     font-size: 0.8rem;
+}
+
+.countdownContainer img{
+    position: absolute;
+    height: 100%;
+    width: 100%;
+    top: 0;
+    left: 0;
+    object-fit: cover;
+    z-index: 1;
+}
+
+.Christmas h5{
+    color: #fff;
 }
 
 /* Grid View */
@@ -180,6 +200,7 @@
 
 .gridView .countdownContainer h5{
     font-size: 1rem;
+    z-index: 2;
 }
 
 @media (max-width:1025px){
