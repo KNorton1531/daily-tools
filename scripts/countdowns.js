@@ -129,7 +129,7 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         });
     
-        favoritesCategory.style.display = favoriteCountdowns.length > 0 ? "block" : "none";
+        document.querySelector(".addMessage").style.display = favoriteCountdowns.length > 0 ? "none" : "block";
     }    
 
     document.querySelectorAll(".countdownContainer").forEach(container => {
