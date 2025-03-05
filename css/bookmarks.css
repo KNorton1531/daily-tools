@@ -26,8 +26,13 @@
     border-radius: 6px;
     text-align: center;
     border: solid 1px #dadada;
+    cursor: pointer;
 }
 
 .openAll:hover{
     border: solid 1px #9e9e9e;
+}
+
+.content h2{
+    margin-top: 0;
 }
