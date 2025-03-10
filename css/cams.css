@@ -1,0 +1,94 @@
+.sortBar{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.sortBar span{
+    cursor: pointer;
+    font-size: 2.5rem;
+}
+
+.camListContainer{
+    width: 100%;
+    display: flex;
+    gap: 1rem;
+    user-select: none;
+    flex-wrap: wrap;
+}
+
+.camCategory{
+    border-radius: 6px;
+    background: #e7e7e7;
+    padding: 1rem;
+    flex-grow: 1;
+}
+
+.camCategory h3{
+    margin: 0;
+    margin-bottom: 1rem;
+    padding: 0;
+}
+
+.camListContainer.active {
+    max-height: 300px;
+}
+
+.material-symbols-outlined.rotate {
+    transform: rotate(180deg);
+    transition: transform 0.3s ease;
+}
+
+.camItem p{
+    margin: 0;
+    padding: 0.2rem;
+}
+
+.camItem a{
+    text-decoration: none;
+    color: #000;
+    display: flex;
+    justify-content: space-between;
+    gap: 2rem;
+    width: 100%;
+    align-items: center;
+}
+
+.camItem a:hover{
+    text-decoration: underline;
+}
+
+.live-indicator{
+    border-radius: 50%;
+    width: 5px;
+    height: 5px;
+    background: red;
+}
+
+.offline-indicator{
+    border-radius: 50%;
+    width: 5px;
+    height: 5px;
+    background: white;
+}
+
+.indicatorWrapper{
+    display: flex;
+    align-items: center;
+    gap: 2px;
+}
+
+.camItem.offline a{
+    color: #979797;
+    pointer-events: none;
+    user-select: none;
+}
+
+.statusWarning{
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    padding: 0 1rem 1rem 1rem;
+}
+

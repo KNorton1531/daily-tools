@@ -11,7 +11,8 @@ document.addEventListener("DOMContentLoaded", function () {
         { title: "Halloween", date: "10-31T00:00:00", annual: true },
         { title: "Easter", date: "2025-04-20T00:00:00", annual: false },
         { title: "The Finals Season 6", date: "2025-03-20T10:00:00", annual: false },
-        { title: "My Birthday", date: "04-22T00:00:00", annual: true }
+        { title: "Finals Season 6 Trailer", date: "2025-03-11T16:00:00", annual: false },
+        { title: "My Birthday", date: "04-22T00:00:00", annual: true },
     ];
 
     const categoryContainer = document.querySelector(".categoryContainer");
