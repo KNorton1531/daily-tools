@@ -75,7 +75,10 @@ document.addEventListener("DOMContentLoaded", function () {
         statusWarning.style.display = hasUnknownStatus ? "flex" : "none";
 
         document.querySelectorAll(".camItem a").forEach(link => {
-            const camName = link.textContent.trim().replace("LIVE", "").replace("OFFLINE", "").trim();
+            if (!link.dataset.camName) {
+                link.dataset.camName = link.textContent.trim();
+            }
+            const camName = link.dataset.camName;                
             const videoId = camStreams[camName] || null;
             const liveStatus = liveStatusMap?.[videoId] ?? "unknown";
 
