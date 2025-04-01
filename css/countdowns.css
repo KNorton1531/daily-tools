@@ -8,6 +8,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
+    flex-wrap: wrap;
 }
 
 .sortItems span{
@@ -171,6 +172,10 @@
     width: 100%;
 }
 
+.favorite .countdownOverlay{
+    display: none;
+}
+
 .gridView .category .countdownWrapper{
     flex-direction: row;
     width: 100%;
@@ -192,6 +197,126 @@
     font-size: 1rem;
     z-index: 2;
 }
+
+.addCountdownContainer{
+    padding: 1rem;
+    width: 100%;
+}
+
+.addCountdownContainer {
+    background: #f5f5f5;
+    padding: 20px;
+    margin-top: 20px;
+    border-radius: 12px 12px 6px 6px;
+    max-width: 100%;
+    margin-inline: auto;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+    font-family: 'Poppins', sans-serif;
+  }
+  
+  .formColumns {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+  }
+  
+  .formColumn {
+    flex: 1 1 300px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  
+  .formGroup {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .formGroup label {
+    font-weight: 500;
+    margin-bottom: 6px;
+    font-size: 14px;
+  }
+  
+  .formGroup input,
+  .formGroup select {
+    padding: 8px 10px;
+    font-size: 14px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+  }
+  
+  .formSubmitRow {
+    margin-top: 20px;
+    text-align: right;
+  }
+  
+  .submitButton {
+    padding: 10px 18px;
+    font-size: 14px;
+    background: #393939;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  
+  .submitButton:hover {
+    background: #000;
+  }
+
+  .countdownOverlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255,255,255,0.95);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 10;
+    border-radius: 8px;
+    padding: 1rem;
+  }
+  
+  .countdownOverlay h4 {
+    margin: 0 0 10px 0;
+  }
+  
+  .countdownOverlay button {
+    margin-top: 8px;
+    padding: 8px 14px;
+    font-size: 0.9rem;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  
+  .countdownOverlay .favoriteBtn {
+    background: #007bff;
+    color: white;
+  }
+  .countdownOverlay .deleteBtn {
+    background: #dc3545;
+    color: white;
+  }
+  
+  .favoritesCategory .countdownWrapper {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    width: 100%;
+    min-height: 1px; /* Ensures it's not collapsed */
+  }
+  
+  .favoritesCategory {
+    overflow: visible;
+  }
+  
+  
 
 @media (max-width:1025px){
     .listView .favoritesCategory .countdownContainer{

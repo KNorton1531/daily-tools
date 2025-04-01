@@ -17,6 +17,7 @@ document.addEventListener("DOMContentLoaded", function () {
         "Disney XD": "Jo_R1pHp24E",
         "Heathrow Airport": null ,
         "Manchester Airport": null,
+        "Rovaniemi Aurora": "M320gHuE_KM",
     };
 
     const channelIds = {

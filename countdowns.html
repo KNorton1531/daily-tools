@@ -81,12 +81,83 @@
       <div class="page">
         <div class="content">
           <div class="sortBar">
-            <div class="sortTitle">Sort Options</div>
+            <div class="authBar">
+              <button id="customBtn">+ Custom</button>
+            </div>
+            
+            
+            
             <div class="sortItems">
               <span class="material-symbols-outlined gridButton">grid_view</span>
               <span class="material-symbols-outlined listButton">view_list</span>
             </div>
+            <div id="customCountdown" class="addCountdownContainer" style="display: none;">
+              <form id="countdownForm">
+                <div class="formColumns">
+                  <!-- Left Column: Info -->
+                  <div class="formColumn">
+                    <div class="formGroup">
+                      <label for="countdownName">Countdown Name</label>
+                      <input type="text" id="countdownName" placeholder="e.g. My Trip">
+                    </div>
+                    <div class="formGroup">
+                      <label for="countdownDate">Date</label>
+                      <input type="date" id="countdownDate">
+                    </div>
+
+                    <div class="formGroup">
+                      <label for="annualCheck">Annual?</label>
+                      <input style="align-self: flex-start;" type="checkbox" id="annualCheck">
+                    </div>
+
+
+                    <div class="formGroup">
+                      <label for="countdownTime">Time</label>
+                      <input type="time" id="countdownTime">
+                    </div>
+                    <div class="formGroup">
+                      <label for="countdownCategory">Category</label>
+                      <select id="countdownCategory">
+                        <option value="Seasonal">Seasonal</option>
+                        <option value="Holidays">Holidays</option>
+                        <option value="Personal">Personal</option>
+                        <option value="Misc">Misc</option>
+                      </select>
+                    </div>
+                  </div>
+            
+                  <!-- Right Column: Style -->
+                  <div class="formColumn">
+                    <div class="formGroup">
+                      <label for="backgroundCol">Background Colour</label>
+                      <select id="backgroundCol">
+                        <option value="White">White</option>
+                        <option value="Blue">Blue</option>
+                        <option value="Black">Black</option>
+                        <option value="Grey">Grey</option>
+                      </select>
+                    </div>
+                    <div class="formGroup">
+                      <label for="textColor">Text Colour</label>
+                      <select id="textColor">
+                        <option value="Black">Black</option>
+                        <option value="White">White</option>
+                        <option value="Blue">Blue</option>
+                        <option value="Grey">Grey</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+            
+                <!-- Submit Button -->
+                <div class="formSubmitRow">
+                  <button type="submit" class="submitButton">Save Countdown</button>
+                </div>
+              </form>
+            </div>
           </div>
+
+
           <div class="categoryContainer gridView">
 
             <div class="category favoritesCategory">
@@ -108,7 +179,7 @@
                     <div class="days"></div>
                     <div class="hours"></div>
                     <div class="minutes"></div>
-                    <div class="seconds"></div>
+                    
                   </div>
                 </div>
                 <div class="countdownContainer Summer">
@@ -118,7 +189,7 @@
                     <div class="days"></div>
                     <div class="hours"></div>
                     <div class="minutes"></div>
-                    <div class="seconds"></div>
+                    
                   </div>
                 </div>
                 <div class="countdownContainer Autumn">
@@ -128,7 +199,7 @@
                     <div class="days"></div>
                     <div class="hours"></div>
                     <div class="minutes"></div>
-                    <div class="seconds"></div>
+                    
                   </div>
                 </div>
                 <div class="countdownContainer Winter">
@@ -138,7 +209,7 @@
                     <div class="days"></div>
                     <div class="hours"></div>
                     <div class="minutes"></div>
-                    <div class="seconds"></div>
+                    
                   </div>
                 </div>
               </div>
@@ -153,7 +224,7 @@
                     <div class="days"></div>
                     <div class="hours"></div>
                     <div class="minutes"></div>
-                    <div class="seconds"></div>
+                    
                   </div>
                 </div>
                 <div class="countdownContainer December">
@@ -163,7 +234,7 @@
                     <div class="days"></div>
                     <div class="hours"></div>
                     <div class="minutes"></div>
-                    <div class="seconds"></div>
+                    
                   </div>
                 </div>
                 <div class="countdownContainer Halloween">
@@ -173,7 +244,7 @@
                     <div class="days"></div>
                     <div class="hours"></div>
                     <div class="minutes"></div>
-                    <div class="seconds"></div>
+                    
                   </div>
                 </div>
                 <div class="countdownContainer Easter">
@@ -183,7 +254,7 @@
                     <div class="days"></div>
                     <div class="hours"></div>
                     <div class="minutes"></div>
-                    <div class="seconds"></div>
+                    
                   </div>
                 </div>
               </div>
@@ -197,7 +268,7 @@
                     <div class="days"></div>
                     <div class="hours"></div>
                     <div class="minutes"></div>
-                    <div class="seconds"></div>
+                    
                   </div>
                 </div>
                 <div class="countdownContainer Birthday">
@@ -207,7 +278,7 @@
                     <div class="days"></div>
                     <div class="hours"></div>
                     <div class="minutes"></div>
-                    <div class="seconds"></div>
+                    
                   </div>
                 </div>
 
@@ -217,12 +288,13 @@
                     <div class="days"></div>
                     <div class="hours"></div>
                     <div class="minutes"></div>
-                    <div class="seconds"></div>
+
                   </div>
                 </div>
                 
               </div>
-            </div>       
+            </div>  
+            
         
           </div>
           </div>
@@ -233,4 +305,73 @@
 
     <script src="scripts/nav.js"></script>
     <script src="scripts/countdowns.js"></script>
+    <script type="module">
+      import { googleLogin, onAuth, auth } from './scripts/firebaseAuth.js';
+      import { saveCountdown, loadCountdowns } from './scripts/countdown-db.js'; // ✅ This is key
+      import { deleteCountdownById } from './scripts/countdown-db.js';
+      window.deleteCountdown = deleteCountdownById;
+
+    
+      const customBtn = document.getElementById('customBtn');
+      const customForm = document.getElementById('customCountdown');
+      const form = document.getElementById('countdownForm');
+    
+      // Handle auth state (persistent on reload)
+      onAuth(async (user) => {
+        if (user) {
+          console.log("✅ Logged in as:", user.displayName);
+          customBtn.disabled = false;
+
+          // 🔄 Load and render countdowns
+          const userCountdowns = await loadCountdowns(); // Update loadCountdowns to return array
+          window.renderUserCountdowns(userCountdowns);
+        } else {
+          console.log("🚫 Not logged in.");
+          customForm.style.display = "none";
+          customBtn.disabled = false;
+        }
+      });
+
+    
+      // + Custom button logic
+      customBtn.addEventListener('click', async () => {
+        const user = auth.currentUser;
+        if (!user) {
+          try {
+            await googleLogin();
+          } catch (err) {
+            console.error("Login failed:", err);
+          }
+        } else {
+          customForm.style.display = customForm.style.display === "none" ? "block" : "none";
+        }
+      });
+    
+      // Countdown form submission
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+    
+        const data = {
+          label: document.getElementById('countdownName').value.trim(),
+          date: document.getElementById('countdownDate').value,
+          time: document.getElementById('countdownTime').value,
+          category: document.getElementById('countdownCategory').value,
+          backgroundCol: document.getElementById('backgroundCol').value,
+          textColor: document.getElementById('textColor').value,
+          annual: document.getElementById('annualCheck').checked
+        };
+    
+        if (!data.label || !data.date) {
+          alert("Please enter at least a name and a date.");
+          return;
+        }
+    
+        await saveCountdown(data);
+        form.reset();
+        customForm.style.display = 'none';
+      });
+    </script>
+    
+    
+    
 </body>
