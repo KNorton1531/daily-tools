@@ -10,9 +10,6 @@ document.addEventListener("DOMContentLoaded", function () {
         { title: "December", date: "12-01T00:00:00", annual: true },
         { title: "Halloween", date: "10-31T00:00:00", annual: true },
         { title: "Easter", date: "2025-04-20T00:00:00", annual: false },
-        { title: "The Finals Season 6", date: "2025-03-20T10:00:00", annual: false },
-        { title: "My Birthday", date: "04-22T00:00:00", annual: true },
-        { title: "Last of us 2", date: "2025-04-03T00:00:00", annual: false },
     ];
 
     const categoryContainer = document.querySelector(".categoryContainer");
@@ -121,12 +118,30 @@ document.addEventListener("DOMContentLoaded", function () {
         const allCategories = document.querySelectorAll(".category");
         for (let cat of allCategories) {
             const heading = cat.querySelector("h3");
-            if (heading && heading.textContent.trim().toLowerCase().includes(categoryName.toLowerCase())) {
-            return cat.querySelector(".countdownWrapper");
+            if (heading && heading.textContent.trim().toLowerCase() === categoryName.toLowerCase()) {
+                return cat.querySelector(".countdownWrapper");
             }
         }
-        return null;
+    
+        // If not found, create a new category
+        const categoryContainer = document.querySelector(".categoryContainer");
+    
+        const newCategory = document.createElement("div");
+        newCategory.classList.add("category");
+    
+        const heading = document.createElement("h3");
+        heading.textContent = categoryName;
+    
+        const wrapper = document.createElement("div");
+        wrapper.classList.add("countdownWrapper");
+    
+        newCategory.appendChild(heading);
+        newCategory.appendChild(wrapper);
+        categoryContainer.appendChild(newCategory);
+    
+        return wrapper;
     }
+    
       
 
     function toggleFavorite(title) {
@@ -197,7 +212,25 @@ document.addEventListener("DOMContentLoaded", function () {
             }
 
             const countdown = getExactCountdown(targetDate, isGridView);
-            if (!countdown) return;
+            if (!countdown) {
+                if (!event.annual && targetDate < now) {
+                    container.innerHTML = `
+                        <h5>${event.title}</h5>
+                        <p class="countdownEndedMessage">🎉 This countdown has ended!</p>
+                    `;
+                    container.classList.add("ended");
+            
+                    // Ensure overlay still shows so the user can delete it
+                    container.onclick = function () {
+                        showOverlay(event.title, container.dataset.countdownId || null, container);
+                    };
+            
+                    return;
+                }
+                return;
+            }
+            
+            
 
             container.querySelector(".days").innerHTML = `<div class="timerValue">${countdown.totalDays}</div><div class="timerLabel">Days</div>`;
 

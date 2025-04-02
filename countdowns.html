@@ -113,7 +113,7 @@
 
                     <div class="formGroup">
                       <label for="countdownTime">Time</label>
-                      <input type="time" id="countdownTime">
+                      <input type="time" id="countdownTime" value="00:00">
                     </div>
                     <div class="formGroup">
                       <label for="countdownCategory">Category</label>
@@ -128,15 +128,15 @@
             
                   <!-- Right Column: Style -->
                   <div class="formColumn">
+
                     <div class="formGroup">
                       <label for="backgroundCol">Background Colour</label>
-                      <select id="backgroundCol">
-                        <option value="White">White</option>
-                        <option value="Blue">Blue</option>
-                        <option value="Black">Black</option>
-                        <option value="Grey">Grey</option>
-                      </select>
+                      <input type="color" id="backgroundCol" value="#ffffff">
                     </div>
+                    
+                    
+                    
+
                     <div class="formGroup">
                       <label for="textColor">Text Colour</label>
                       <select id="textColor">
@@ -146,6 +146,10 @@
                         <option value="Grey">Grey</option>
                       </select>
                     </div>
+                  </div>
+
+                  <div id="countdownPreview" class="countdownContainer preview" style="margin-top: 1rem;">
+                    <h5>Preview Style</h5>
                   </div>
                 </div>
             
@@ -258,42 +262,7 @@
                   </div>
                 </div>
               </div>
-            </div>
-            <div class="category">
-              <h3>Personal</h3>
-              <div class="countdownWrapper">
-                <div class="countdownContainer Finals" style="background: #c41733;">
-                  <h5 style="color: #fff;">The Finals Season 6</h5>
-                  <div class="timers">
-                    <div class="days"></div>
-                    <div class="hours"></div>
-                    <div class="minutes"></div>
-                    
-                  </div>
-                </div>
-                <div class="countdownContainer Birthday">
-                  <img src="assets/birthdayBackground.png" alt="">
-                  <h5 style="color: #fff;">My Birthday</h5>
-                  <div class="timers">
-                    <div class="days"></div>
-                    <div class="hours"></div>
-                    <div class="minutes"></div>
-                    
-                  </div>
-                </div>
-
-                <div class="countdownContainer finals" style="background: #c41733;">
-                  <h5 style="color: #fff;">Last of us 2</h5>
-                  <div class="timers">
-                    <div class="days"></div>
-                    <div class="hours"></div>
-                    <div class="minutes"></div>
-
-                  </div>
-                </div>
-                
-              </div>
-            </div>  
+            </div> 
             
         
           </div>
@@ -315,6 +284,30 @@
       const customBtn = document.getElementById('customBtn');
       const customForm = document.getElementById('customCountdown');
       const form = document.getElementById('countdownForm');
+
+      // 👇 PREVIEW ELEMENTS
+      const previewContainer = document.getElementById("countdownPreview");
+      const nameInput = document.getElementById("countdownName");
+      const backgroundPicker = document.getElementById("backgroundCol");
+      const textColorSelect = document.getElementById("textColor");
+
+      function updatePreview() {
+        const title = nameInput.value.trim() || "Preview Style";
+        const backgroundColor = backgroundPicker.value;
+        const textColor = textColorSelect.value.toLowerCase();
+
+        previewContainer.querySelector("h5").textContent = title;
+        previewContainer.style.backgroundColor = backgroundColor;
+        previewContainer.style.color = textColor;
+      }
+
+      nameInput.addEventListener("input", updatePreview);
+      textColorSelect.addEventListener("change", updatePreview);
+      backgroundPicker.addEventListener("input", updatePreview);
+
+      // Run once on load
+      updatePreview();
+
     
       // Handle auth state (persistent on reload)
       onAuth(async (user) => {
@@ -360,11 +353,23 @@
           textColor: document.getElementById('textColor').value,
           annual: document.getElementById('annualCheck').checked
         };
+        
     
         if (!data.label || !data.date) {
           alert("Please enter at least a name and a date.");
           return;
         }
+
+        const backgroundPicker = document.getElementById("backgroundCol");
+        const colorPreview = document.getElementById("colorPreview");
+
+        backgroundPicker.addEventListener("input", () => {
+          colorPreview.style.backgroundColor = backgroundPicker.value;
+        });
+
+        // Initialize preview on load
+        colorPreview.style.backgroundColor = backgroundPicker.value;
+
     
         await saveCountdown(data);
         form.reset();
