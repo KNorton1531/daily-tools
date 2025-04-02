@@ -362,16 +362,6 @@
           return;
         }
 
-        const backgroundPicker = document.getElementById("backgroundCol");
-        const colorPreview = document.getElementById("colorPreview");
-
-        backgroundPicker.addEventListener("input", () => {
-          colorPreview.style.backgroundColor = backgroundPicker.value;
-        });
-
-        // Initialize preview on load
-        colorPreview.style.backgroundColor = backgroundPicker.value;
-
     
         await saveCountdown(data);
         form.reset();
