@@ -352,7 +352,23 @@
     transition: background 0.3s ease, color 0.3s ease;
   }
   
-  
+  #customBtn{
+    height: 100%;
+    width: 100%;
+    padding: 0.6rem;
+    font-size: 1rem;
+    font-weight: bold;
+    background: #68b963;
+    color: #fff;
+    border: solid 1px #fff;
+    border-radius: 6px;
+    cursor: pointer;
+    margin-left: 1rem;
+  }
+
+  #customBtn:hover{
+    background: #58aa55;
+  }
   
   
   
