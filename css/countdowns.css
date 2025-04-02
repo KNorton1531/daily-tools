@@ -91,6 +91,10 @@
     user-select: none;
     position: relative;
     overflow: hidden;
+    flex: 1 0 22%; /* Grow/shrink allowed, but starts at ~25% minus gap */
+    max-width: 30%;
+    min-width: 200px; /* optional for responsiveness */
+    box-sizing: border-box;
 }
 
 .countdownContainer:hover{
@@ -118,6 +122,7 @@
     z-index: 2;
     position: relative;
     color: #000;
+    justify-content: space-between;
 }
 
 .days, .hours, .minutes, .seconds{
@@ -129,7 +134,9 @@
     padding: 1rem;
     border-radius: 6px;
     background: #f3f3f3;
-    width: 100%;
+    width: 100px;
+    flex: 1;
+    max-width: 30%;
 }
 
 .timerValue{
