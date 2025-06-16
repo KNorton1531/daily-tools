@@ -9,7 +9,6 @@ document.addEventListener("DOMContentLoaded", function () {
         { title: "Christmas", date: "12-25T00:00:00", annual: true },
         { title: "December", date: "12-01T00:00:00", annual: true },
         { title: "Halloween", date: "10-31T00:00:00", annual: true },
-        { title: "Easter", date: "2025-04-20T00:00:00", annual: false },
     ];
 
     const categoryContainer = document.querySelector(".categoryContainer");
@@ -258,7 +257,7 @@ document.addEventListener("DOMContentLoaded", function () {
         if (!event) return;
     
         container.addEventListener("click", function () {
-            showOverlay(title, null, this); // no id
+            showOverlay(title, null, this);
           });
                    
     });

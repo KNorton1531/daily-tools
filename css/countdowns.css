@@ -51,10 +51,6 @@
     margin-top: 0;
 }
 
-.listView .favoritesCategory .countdownContainer{
-    width: 49%;
-}
-
 .favoritesCategory{
     width: 100%;
 }
@@ -84,29 +80,28 @@
 }
 
 .countdownContainer{
-    background: #fff;
+    background: #2b2b2b;
     padding: 1rem;
     border-radius: 6px;
     cursor: pointer;
     user-select: none;
     position: relative;
     overflow: hidden;
-    flex: 1 0 22%; /* Grow/shrink allowed, but starts at ~25% minus gap */
-    max-width: 30%;
-    min-width: 200px; /* optional for responsiveness */
     box-sizing: border-box;
+    flex-grow: 1;
 }
 
 .countdownContainer:hover{
-    outline: solid 2px #2b2b2b;
+    outline: solid 2px #979797;
 }
 
 .countdownContainer h5{
     font-size: 1.5rem;
     margin: 0;
     margin-bottom: 1rem;
-    z-index: 2;
     position: relative;
+    text-align: center;
+    color: #fff;
 }
 
 .countdownWrapper{
@@ -119,10 +114,8 @@
 .timers{
     display: flex;
     gap: 1rem;
-    z-index: 2;
-    position: relative;
-    color: #000;
-    justify-content: space-between;
+    color: #fff;
+    justify-content: center;
 }
 
 .days, .hours, .minutes, .seconds{
@@ -133,10 +126,9 @@
     justify-content: center;
     padding: 1rem;
     border-radius: 6px;
-    background: #f3f3f3;
+    background: #121212;
     width: 100px;
     flex: 1;
-    max-width: 30%;
 }
 
 .timerValue{
@@ -157,10 +149,6 @@
     z-index: 1;
 }
 
-.Christmas h5{
-    color: #fff;
-}
-
 /* Grid View */
 
 .gridView{
@@ -173,11 +161,12 @@
     background: #e7e7e7;
     padding: 1rem;
     border-radius: 6px;
-    width: max-content  ;
+    width: max-content;
+    flex-grow: 1;
 }
 
 .gridView .category.favoritesCategory{
-    width: 100%;
+
 }
 
 .favorite .countdownOverlay{
@@ -186,7 +175,6 @@
 
 .gridView .category .countdownWrapper{
     flex-direction: row;
-    width: 100%;
 }
 
 .gridView .hours{
