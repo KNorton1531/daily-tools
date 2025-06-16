@@ -233,6 +233,15 @@ document.addEventListener("DOMContentLoaded", function () {
 
             container.querySelector(".days").innerHTML = `<div class="timerValue">${countdown.totalDays}</div><div class="timerLabel">Days</div>`;
 
+            let dateDiv = container.querySelector(".countdownDate");
+            if (!dateDiv) {
+                dateDiv = document.createElement("div");
+                dateDiv.className = "countdownDate";
+                container.appendChild(dateDiv);
+            }
+            dateDiv.textContent = formatDateDisplay(targetDate);
+
+
             if (isGridView) {
                 container.querySelector(".hours").innerHTML = "";
                 container.querySelector(".minutes").innerHTML = "";
@@ -245,6 +254,25 @@ document.addEventListener("DOMContentLoaded", function () {
 
         updateFavorites();
     }
+
+    function formatDateDisplay(dateObj) {
+        if (!(dateObj instanceof Date)) return '';
+        const day = dateObj.getDate();
+        const month = dateObj.toLocaleString('en-GB', { month: 'short' });
+        const year = dateObj.getFullYear();
+        // Get ordinal suffix (st, nd, rd, th)
+        function nth(d) {
+            if (d > 3 && d < 21) return 'th';
+            switch (d % 10) {
+                case 1:  return "st";
+                case 2:  return "nd";
+                case 3:  return "rd";
+                default: return "th";
+            }
+        }
+        return `${day}${nth(day)} ${month} ${year}`;
+    }
+    
 
     sortButton.addEventListener("click", toggleSort);
     if (gridViewBtn) gridViewBtn.addEventListener("click", () => toggleView(true));
@@ -308,7 +336,6 @@ document.addEventListener("DOMContentLoaded", function () {
             if (categoryWrapper) {
                 const container = document.createElement("div");
                 container.classList.add("countdownContainer");
-                container.style.background = entry.backgroundCol || "#fff";
                 container.style.color = entry.textColor || "#000";
                 container.dataset.countdownId = entry.id;
 
@@ -351,6 +378,19 @@ document.addEventListener("DOMContentLoaded", function () {
 
             
                 categoryWrapper.appendChild(container);
+
+                let targetDate = new Date(fullDate);
+                // If annual, update year if needed
+                if (entry.annual) {
+                    const now = new Date();
+                    if (targetDate < now) {
+                        targetDate.setFullYear(now.getFullYear() + 1);
+                    }
+                }
+                let dateDiv = document.createElement("div");
+                dateDiv.className = "countdownDate";
+                dateDiv.textContent = formatDateDisplay(targetDate);
+                container.appendChild(dateDiv);
             
                 container.addEventListener("click", function () {
                     showOverlay(entry.label, entry.id, this); // ✅ 'this' refers to the clicked container

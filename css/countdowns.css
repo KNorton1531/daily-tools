@@ -89,6 +89,14 @@
     overflow: hidden;
     box-sizing: border-box;
     flex-grow: 1;
+    max-width: 50%;
+}
+
+.countdownDate{
+  color: #fff;
+  text-align: center;
+  margin-top: 1rem;
+  font-weight: bold;
 }
 
 .countdownContainer:hover{
