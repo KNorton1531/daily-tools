@@ -7,13 +7,11 @@ document.addEventListener("DOMContentLoaded", function () {
         { title: "Autumn", date: "09-01T00:00:00", annual: true },
         { title: "Winter", date: "12-01T00:00:00", annual: true },
         { title: "Christmas", date: "12-25T00:00:00", annual: true },
-        { title: "December", date: "12-01T00:00:00", annual: true },
         { title: "Halloween", date: "10-31T00:00:00", annual: true },
     ];
 
     const categoryContainer = document.querySelector(".categoryContainer");
     const favoritesContainer = document.querySelector(".favoritesCategory .countdownWrapper");
-    const favoritesCategory = document.querySelector(".favoritesCategory");
     const addMessage = document.querySelector(".favoritesCategory .addMessage");
     const sortButton = document.querySelector(".favoritesCategory h3 span");
     const sortingMessage = document.querySelector(".favoritesCategory .sortingMessage");

@@ -229,15 +229,6 @@
                   </div>
                 </div>
                 <div class="countdownContainer">
-                  <h5>December</h5>
-                  <div class="timers">
-                    <div class="days"></div>
-                    <div class="hours"></div>
-                    <div class="minutes"></div>
-                    
-                  </div>
-                </div>
-                <div class="countdownContainer">
                   <h5>Halloween</h5>
                   <div class="timers">
                     <div class="days"></div>
@@ -260,96 +251,90 @@
     <script src="scripts/nav.js"></script>
     <script src="scripts/countdowns.js"></script>
     <script type="module">
-      import { googleLogin, onAuth, auth } from './scripts/firebaseAuth.js';
-      import { saveCountdown, loadCountdowns } from './scripts/countdown-db.js'; // ✅ This is key
-      import { deleteCountdownById } from './scripts/countdown-db.js';
-      window.deleteCountdown = deleteCountdownById;
+    import { googleLogin, onAuth, auth } from './scripts/firebaseAuth.js';
+    import { saveCountdown, loadCountdowns, deleteCountdownById } from './scripts/countdown-db.js';
+    window.deleteCountdown = deleteCountdownById;
 
-    
-      const customBtn = document.getElementById('customBtn');
-      const customForm = document.getElementById('customCountdown');
-      const form = document.getElementById('countdownForm');
+    const ADMIN_UID = "GUOg1pBxNnPZyeLCM4zHAV4Vx4C3";
 
-      // 👇 PREVIEW ELEMENTS
-      const previewContainer = document.getElementById("countdownPreview");
-      const nameInput = document.getElementById("countdownName");
-      const backgroundPicker = document.getElementById("backgroundCol");
-      const textColorSelect = document.getElementById("textColor");
+    const customBtn = document.getElementById('customBtn');
+    const customForm = document.getElementById('customCountdown');
+    const form = document.getElementById('countdownForm');
 
-      function updatePreview() {
-        const title = nameInput.value.trim() || "Preview Style";
-        const backgroundColor = backgroundPicker.value;
-        const textColor = textColorSelect.value.toLowerCase();
+    // Always load and render countdowns
+    (async () => {
+      const userCountdowns = await loadCountdowns();
+      window.renderUserCountdowns(userCountdowns);
+    })();
 
-        previewContainer.querySelector("h5").textContent = title;
-        previewContainer.style.backgroundColor = backgroundColor;
-        previewContainer.style.color = textColor;
+    // Auth state: update UI
+    onAuth(async (user) => {
+      if (!user) {
+        // Not logged in
+        customBtn.textContent = "Admin";
+        customBtn.style.display = "";
+        customBtn.disabled = false;
+        customForm.style.display = "none";
+      } else if (user.uid !== ADMIN_UID) {
+        // Wrong account: hide everything
+        customBtn.style.display = "none";
+        customForm.style.display = "none";
+      } else {
+        // Logged in as admin
+        customBtn.textContent = "+ Custom";
+        customBtn.style.display = "";
+        customBtn.disabled = false;
+        // Keep form hidden until toggled
+      }
+    });
+
+    // Button logic
+    customBtn.addEventListener('click', async () => {
+      const user = auth.currentUser;
+      if (!user) {
+        // Not logged in: prompt login
+        try {
+          await googleLogin();
+        } catch (err) {
+          console.error("Login failed:", err);
+        }
+      } else if (user.uid === ADMIN_UID) {
+        // Logged in as admin: toggle form
+        customForm.style.display = customForm.style.display === "none" ? "block" : "none";
+      }
+      // Else (wrong user), do nothing (button is hidden anyway)
+    });
+
+    // Submit form (admin only)
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const user = auth.currentUser;
+      if (!user || user.uid !== ADMIN_UID) {
+        alert("Only the admin can create countdowns.");
+        return;
       }
 
-      nameInput.addEventListener("input", updatePreview);
-      textColorSelect.addEventListener("change", updatePreview);
-      backgroundPicker.addEventListener("input", updatePreview);
+      const data = {
+        label: document.getElementById('countdownName').value.trim(),
+        date: document.getElementById('countdownDate').value,
+        time: document.getElementById('countdownTime').value,
+        category: document.getElementById('countdownCategory').value,
+        backgroundCol: document.getElementById('backgroundCol').value,
+        textColor: document.getElementById('textColor').value,
+        annual: document.getElementById('annualCheck').checked
+      };
 
-      // Run once on load
-      updatePreview();
+      if (!data.label || !data.date) {
+        alert("Please enter at least a name and a date.");
+        return;
+      }
 
-    
-      // Handle auth state (persistent on reload)
-      onAuth(async (user) => {
-        if (user) {
-          console.log("✅ Logged in as:", user.displayName);
-          customBtn.disabled = false;
+      await saveCountdown(data);
+      form.reset();
+      customForm.style.display = 'none';
+    });
 
-          // 🔄 Load and render countdowns
-          const userCountdowns = await loadCountdowns(); // Update loadCountdowns to return array
-          window.renderUserCountdowns(userCountdowns);
-        } else {
-          console.log("🚫 Not logged in.");
-          customForm.style.display = "none";
-          customBtn.disabled = false;
-        }
-      });
 
-    
-      // + Custom button logic
-      customBtn.addEventListener('click', async () => {
-        const user = auth.currentUser;
-        if (!user) {
-          try {
-            await googleLogin();
-          } catch (err) {
-            console.error("Login failed:", err);
-          }
-        } else {
-          customForm.style.display = customForm.style.display === "none" ? "block" : "none";
-        }
-      });
-    
-      // Countdown form submission
-      form.addEventListener('submit', async (e) => {
-        e.preventDefault();
-    
-        const data = {
-          label: document.getElementById('countdownName').value.trim(),
-          date: document.getElementById('countdownDate').value,
-          time: document.getElementById('countdownTime').value,
-          category: document.getElementById('countdownCategory').value,
-          backgroundCol: document.getElementById('backgroundCol').value,
-          textColor: document.getElementById('textColor').value,
-          annual: document.getElementById('annualCheck').checked
-        };
-        
-    
-        if (!data.label || !data.date) {
-          alert("Please enter at least a name and a date.");
-          return;
-        }
-
-    
-        await saveCountdown(data);
-        form.reset();
-        customForm.style.display = 'none';
-      });
     </script>
     
     

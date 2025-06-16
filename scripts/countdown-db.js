@@ -1,6 +1,7 @@
 import { collection, addDoc, serverTimestamp, getDocs, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-firestore.js";
 import { auth, db } from './firebaseAuth.js';
 
+// Add a countdown (requires login)
 export async function saveCountdown(data) {
   const user = auth.currentUser;
   if (!user) {
@@ -8,8 +9,7 @@ export async function saveCountdown(data) {
     return;
   }
 
-  const countdownRef = collection(db, "users", user.uid, "countdowns");
-
+  const countdownRef = collection(db, "countdowns");
   const countdownData = {
     ...data,
     uid: user.uid,
@@ -24,48 +24,41 @@ export async function saveCountdown(data) {
   }
 }
 
+// Load all countdowns (public)
 export async function loadCountdowns() {
-    const user = auth.currentUser;
-    if (!user) {
-      console.warn("User not logged in — cannot load countdowns.");
-      return [];
-    }
-  
-    const countdownRef = collection(db, "users", user.uid, "countdowns");
-  
-    try {
-      const snapshot = await getDocs(countdownRef);
-      const result = [];
-  
-      snapshot.forEach(doc => {
-        const data = doc.data();
-        result.push({
-          ...data,
-          id: doc.id // Include Firestore document ID
-        });
-      });      
-  
-      return result;
-    } catch (error) {
-      console.error("Error loading countdowns:", error);
-      return [];
-    }
+  const countdownRef = collection(db, "countdowns");
+  try {
+    const snapshot = await getDocs(countdownRef);
+    const result = [];
+    snapshot.forEach(doc => {
+      const data = doc.data();
+      result.push({
+        ...data,
+        id: doc.id
+      });
+    });
+    return result;
+  } catch (error) {
+    console.error("Error loading countdowns:", error);
+    return [];
+  }
+}
+
+
+// Delete a countdown (requires login)
+export async function deleteCountdownById(docId) {
+  const user = auth.currentUser;
+  if (!user) {
+    console.warn("Cannot delete — user not logged in.");
+    return;
   }
 
-  export async function deleteCountdownById(docId) {
-    const user = auth.currentUser;
-    if (!user) {
-      console.warn("Cannot delete — user not logged in.");
-      return;
-    }
-  
-    const docRef = doc(db, "users", user.uid, "countdowns", docId);
-  
-    try {
-      await deleteDoc(docRef);
-      console.log("🗑️ Countdown deleted:", docId);
-    } catch (error) {
-      console.error("❌ Error deleting countdown:", error);
-    }
+  const docRef = doc(db, "countdowns", docId);
+
+  try {
+    await deleteDoc(docRef);
+    console.log("🗑️ Countdown deleted:", docId);
+  } catch (error) {
+    console.error("❌ Error deleting countdown:", error);
   }
-  
+}
