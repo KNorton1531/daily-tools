@@ -1,402 +1,140 @@
-
-
-.sortBar{
-    width: 100%;
-    background: #e7e7e7;
-    border-radius: 6px;
-    margin-bottom: 1rem;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
+:root{
+  --bg:#111214;
+  --panel:#1b1d21;
+  --muted:#7a808a;
+  --soft:#e7e7e7;
+  --card:#2b2b2b;
+  --card-alt:#1f2024;
+  --border:#2f3238;
+  --brand:#5fbf5a;
+  --brand-ink:#0e1b10;
+  --danger:#d23b3b;
+  --text:#f7f7f8;
+  --text-dim:#d0d3d8;
+  --focus:#7da8ff;
+  --radius:12px;
+  font-synthesis-weight none;
 }
 
-.sortItems span{
-    background-color: #fff;
-    padding: 0.5rem;
-    border-radius: 6px;
-    user-select: none;
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0;
+  font-family:Poppins,system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+  background:var(--bg);
+  color:var(--text);
 }
 
-.sortItems .gridButton{
-    background: #c5c5c5;
+/* Toolbar */
+.toolbar{
+  position:sticky;
+  top:0;
+  z-index:10;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:1rem;
+  padding:0.8rem 1rem;
+  background:linear-gradient(180deg,var(--panel),rgba(27,29,33,0.7));
+  backdrop-filter:saturate(1.2) blur(6px);
+  border-bottom:1px solid var(--border);
+}
+.toolbar-left,.toolbar-right{display:flex;align-items:center;gap:0.8rem}
+.app-title{font-size:1.15rem;margin:0 0.5rem 0 0;font-weight:600}
+
+.view-toggle .segmented{
+  appearance:none;
+  border:1px solid var(--border);
+  background:transparent;
+  color:var(--text);
+  padding:0.4rem 0.6rem;
+  border-radius:10px;
+  display:flex;align-items:center;gap:0.35rem;
+  cursor:pointer;
+}
+.view-toggle .segmented.active{background:var(--card-alt)}
+.view-toggle .segmented:focus{outline:2px solid var(--focus);outline-offset:2px}
+
+.primary,.chip,.ghost,.danger,.icon-btn{
+  appearance:none;border:1px solid var(--border);
+  background:var(--card-alt);color:var(--text);
+  padding:0.5rem 0.7rem;border-radius:10px;cursor:pointer;
+}
+.primary{background:var(--brand);color:#0b150c;border-color:#2a4d2b;font-weight:600}
+.primary:hover{filter:brightness(1.05)}
+.ghost{background:transparent}
+.chip{display:flex;align-items:center;gap:0.35rem}
+.icon-btn{display:grid;place-items:center;padding:0.35rem;border-radius:8px}
+.icon-btn[hidden]{display:none}
+.danger{background:#3a1717;border-color:#5a1f1f;color:#ffcdcd}
+.danger:hover{filter:brightness(1.05)}
+
+.filters{display:flex;align-items:center;gap:0.5rem}
+.filters input[type="search"], .filters select{
+  background:var(--card-alt);border:1px solid var(--border);color:var(--text);
+  padding:0.5rem 0.6rem;border-radius:10px;min-width:15ch;
 }
 
-.sortItems span:hover{
-    background-color: #c5c5c5;
-    cursor: pointer;
+/* Layout */
+.page{padding:1rem;max-width:1200px;margin-inline:auto}
+.category{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);padding:1rem;margin-bottom:1rem}
+.category .category-header{display:flex;align-items:baseline;justify-content:space-between}
+.category .meta{margin:0;color:var(--muted);font-size:0.9rem}
+.wrap{display:grid;grid-template-columns:repeat(12,1fr);gap:0.8rem}
+
+/* Cards */
+.card{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  padding:0.9rem;
+  display:flex;flex-direction:column;gap:0.7rem;
+  min-height:140px;
+  outline:none;
 }
+.card:focus{box-shadow:0 0 0 2px var(--focus)}
+.card-head{display:flex;justify-content:space-between;align-items:flex-start;gap:0.5rem}
+.card-title{margin:0;font-size:1.05rem;line-height:1.2}
+.card .timers{display:flex;gap:0.6rem}
+.card .timer{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#17181b;border:1px solid var(--border);border-radius:10px;padding:0.6rem}
+.card .num{font-size:1.5rem;font-weight:700}
+.card .label{font-size:0.75rem;color:var(--text-dim)}
+.card .date{margin-top:auto;text-align:center;color:var(--text-dim);font-weight:600}
 
-.sortItems{
-    display: flex;
-    gap: 0.5rem;
-    justify-content: flex-end;
-    align-items: center;
-    padding: 1rem;
-}
+/* Compact vs Spacious */
+:root .wrap.compact .card{min-height:130px}
+:root .wrap.compact .card .timer:nth-child(2),
+:root .wrap.compact .card .timer:nth-child(3){display:none}
+:root .wrap.compact{grid-template-columns:repeat(auto-fill,minmax(180px,1fr))}
 
-.sortTitle{
-    padding: 1rem;
-}
+:root .wrap.spacious{grid-template-columns:repeat(1,1fr)}
+:root .wrap.spacious .card{min-height:150px}
+:root .wrap.spacious .card .num{font-size:2rem}
+:root .wrap.spacious .card .timer:nth-child(2),
+:root .wrap.spacious .card .timer:nth-child(3){display:flex}
 
-.category{
-    background: #e7e7e7;  
-    padding: 1rem;
-    margin-bottom: 1rem;
-    width: 100%;
-    border-radius: 6px;
-}
+/* Empty state */
+.empty-state{margin:0.25rem 0 0.75rem;color:var(--muted)}
 
-.category h5, .category h3{
-    margin-top: 0;
-}
+/* Dialog */
+dialog{border:none;border-radius:16px;padding:0;background:var(--panel);color:var(--text);width:min(480px,92vw)}
+dialog::backdrop{background:rgba(0,0,0,0.4);backdrop-filter:blur(4px)}
+.dialog-inner{padding:0.8rem 0.9rem}
+.dialog-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:0.4rem}
+.dialog-body{display:flex;flex-direction:column;gap:0.5rem}
+.dialog-foot{margin-top:0.4rem}
+.full{width:100%}
 
-.favoritesCategory{
-    width: 100%;
-}
+/* Admin form */
+#adminPanel{border-top:1px dashed var(--border);padding:1rem;margin:0 1rem 1rem;border-radius:var(--radius)}
+.admin-form{display:grid;gap:0.8rem}
+.form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:0.6rem}
+label{display:flex;flex-direction:column;gap:0.25rem;font-weight:500}
+input,select{background:var(--card-alt);border:1px solid var(--border);border-radius:10px;color:var(--text);padding:0.55rem}
+.checkbox{flex-direction:row;align-items:center;gap:0.6rem}
+.form-actions{display:flex;justify-content:flex-end}
 
-.favoritesCategory h3{
-    margin-bottom: 0.5rem;
-    display: flex;
-    gap: 0.5rem;
-    align-items: center;
-}
-
-.favoritesCategory h3 span{
-    background: #fff;
-    padding: 0.2rem;
-    border-radius: 6px;
-    user-select: none;
-    cursor: pointer;
-}
-
-.addMessage{
-    font-size: 0.8rem;
-    margin-top: 0;
-}
-
-.sortingMessage{
-    font-size: 0.8rem;
-}
-
-.countdownContainer{
-    background: #2b2b2b;
-    padding: 1rem;
-    border-radius: 6px;
-    cursor: pointer;
-    user-select: none;
-    position: relative;
-    overflow: hidden;
-    box-sizing: border-box;
-    flex-grow: 1;
-    max-width: 50%;
-}
-
-.countdownDate{
-  color: #fff;
-  text-align: center;
-  margin-top: 1rem;
-  font-weight: bold;
-}
-
-.countdownContainer:hover{
-    outline: solid 2px #979797;
-}
-
-.countdownContainer h5{
-    font-size: 1.5rem;
-    margin: 0;
-    margin-bottom: 1rem;
-    position: relative;
-    text-align: center;
-    color: #fff;
-}
-
-.countdownWrapper{
-    display: flex;
-    gap: 1rem;
-    flex-direction: row;
-    flex-wrap: wrap;
-}
-
-.timers{
-    display: flex;
-    gap: 1rem;
-    color: #fff;
-    justify-content: center;
-}
-
-.days, .hours, .minutes, .seconds{
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-    align-items: center;
-    justify-content: center;
-    padding: 1rem;
-    border-radius: 6px;
-    background: #121212;
-    width: 100px;
-    flex: 1;
-}
-
-.timerValue{
-    font-size: 2rem;
-}
-
-.timerLabel{
-    font-size: 0.8rem;
-}
-
-.countdownContainer img{
-    position: absolute;
-    height: 100%;
-    width: 100%;
-    top: 0;
-    left: 0;
-    object-fit: cover;
-    z-index: 1;
-}
-
-/* Grid View */
-
-.gridView{
-    display: flex;
-    gap: 1rem;
-    flex-wrap: wrap;
-}
-
-.gridView .category{
-    background: #e7e7e7;
-    padding: 1rem;
-    border-radius: 6px;
-    width: max-content;
-    flex-grow: 1;
-}
-
-.gridView .category.favoritesCategory{
-
-}
-
-.favorite .countdownOverlay{
-    display: none;
-}
-
-.gridView .category .countdownWrapper{
-    flex-direction: row;
-}
-
-.gridView .hours{
-    display: none;
-}
-
-.gridView .minutes{
-    display: none; 
-}
-
-.gridView .seconds{
-    display: none;
-}
-
-.gridView .countdownContainer h5{
-    font-size: 1rem;
-    z-index: 2;
-}
-
-.addCountdownContainer{
-    padding: 1rem;
-    width: 100%;
-}
-
-.addCountdownContainer {
-    background: #f5f5f5;
-    padding: 20px;
-    margin-top: 20px;
-    border-radius: 12px 12px 6px 6px;
-    max-width: 100%;
-    margin-inline: auto;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
-    font-family: 'Poppins', sans-serif;
-  }
-  
-  .formColumns {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 20px;
-  }
-  
-  .formColumn {
-    flex: 1 1 300px;
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-  }
-  
-  .formGroup {
-    display: flex;
-    flex-direction: column;
-  }
-  
-  .formGroup label {
-    font-weight: 500;
-    margin-bottom: 6px;
-    font-size: 14px;
-  }
-  
-  .formGroup input,
-  .formGroup select {
-    padding: 8px 10px;
-    font-size: 14px;
-    border-radius: 6px;
-    border: 1px solid #ccc;
-  }
-  
-  .formSubmitRow {
-    margin-top: 20px;
-    text-align: right;
-  }
-  
-  .submitButton {
-    padding: 10px 18px;
-    font-size: 14px;
-    background: #393939;
-    color: white;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: background 0.2s;
-  }
-  
-  .submitButton:hover {
-    background: #000;
-  }
-
-  .countdownOverlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(255,255,255,0.95);
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    z-index: 10;
-    border-radius: 8px;
-    padding: 1rem;
-  }
-  
-  .countdownOverlay h4 {
-    margin: 0 0 10px 0;
-  }
-  
-  .countdownOverlay button {
-    margin-top: 8px;
-    padding: 8px 14px;
-    font-size: 0.9rem;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-  }
-  
-  .countdownOverlay .favoriteBtn {
-    background: #007bff;
-    color: white;
-  }
-  .countdownOverlay .deleteBtn {
-    background: #dc3545;
-    color: white;
-  }
-  
-  .favoritesCategory .countdownWrapper {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 1rem;
-    width: 100%;
-    min-height: 1px; /* Ensures it's not collapsed */
-  }
-  
-  .favoritesCategory {
-    overflow: visible;
-  }
-
-  .countdownContainer.ended {
-    opacity: 0.7;
-    filter: grayscale(80%);
-    transition: 0.3s ease;
-  }
-  
-  .countdownEndedMessage {
-    text-align: center;
-    font-weight: 500;
-    font-size: 1rem;
-    color: #555;
-    margin-top: 10px;
-  }
-
-  #backgroundCol {
-    border-radius: 4px;
-    height: 5rem;
-    width: 5rem;
-  }
-  
-  #colorPreview {
-    border-radius: 4px;
-    box-shadow: inset 0 0 2px rgba(0,0,0,0.2);
-  }
-
-  .countdownContainer.preview {
-    border: 2px dashed #ccc;
-    padding: 1rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 100px;
-    transition: background 0.3s ease, color 0.3s ease;
-  }
-  
-  #customBtn{
-    height: 100%;
-    width: 100%;
-    padding: 0.6rem;
-    font-size: 1rem;
-    font-weight: bold;
-    background: #68b963;
-    color: #fff;
-    border: solid 1px #fff;
-    border-radius: 6px;
-    cursor: pointer;
-    margin-left: 1rem;
-  }
-
-  #customBtn:hover{
-    background: #58aa55;
-  }
-  
-  
-  
-  
-
-@media (max-width:1025px){
-    .listView .favoritesCategory .countdownContainer{
-        width: 100%;
-    }
-
-    .gridView .countdownContainer{
-        width: 48%;
-    }
-
-    .gridView .favoritesCategory .countdownWrapper{
-        justify-content: center;
-    }
-}
-
-@media (max-width:764px){
-    .page{
-        padding: 1rem;
-    }
-
-    .listView .timers{
-        flex-wrap: wrap;
-    }
+@media (max-width:720px){
+  .toolbar{flex-wrap:wrap;gap:0.6rem}
+  .filters input[type="search"]{min-width:0;flex:1}
 }

@@ -1,342 +1,162 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KN Daily | Countdowns </title>
-    <link rel="stylesheet" href="css/nav.css">
-    <link rel="stylesheet" href="css/countdowns.css">
-    <link rel="stylesheet" href="css/index.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>KN Daily | Countdowns (Overhaul)</title>
 
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Material+Symbols+Outlined" rel="stylesheet">
+
+  <link rel="stylesheet" href="css/countdowns.css" />
 </head>
 <body>
-  <div id="sidePanel" class="side-panel">
-    <button class="burger-menu" onclick="togglePanel(event)">
-      <span class="material-symbols-outlined">menu</span>
-    </button>
-    <p class="navHeader">KN | Daily Tools</p>
-    <div class="menuContent">
-      <div class="menuGroup">
-        <a href="index.html">
-          <span class="material-symbols-outlined">cloud</span>
-          <p>Weather</p>
-          <div class="completeStatus"></div>
-        </a>
-        <a href="countdowns.html">
-          <span class="material-symbols-outlined">schedule</span>
-          <p>Countdowns</p>
-          <div class="completeStatus"></div>
-        </a>
-        <a href="bookmarks.html">
-          <span class="material-symbols-outlined">bookmark</span>
-          <p>Bookmarks</p>
-          <div class="completeStatus"></div>
-        </a>
-        <a>
-          <span class="material-symbols-outlined">Headphones</span>
-          <p>Lo-Fi Player</p>
-          <div class="notStartedStatus"></div>
-        </a>
-        <a>
-          <span class="material-symbols-outlined">Calculate</span>
-          <p>Calculators</p>
-          <div class="notStartedStatus"></div>
-        </a>
-        
-        <a>
-          <span class="material-symbols-outlined">Travel</span>
-          <p>Flight Tracking</p>
-          <div class="notStartedStatus"></div>
-        </a>
-
-        <a href="cams.html">
-            <span class="material-symbols-outlined">videocam</span>
-            <p>Live Cams</p>
-            <div class="inProgressStatus"></div>
-          </a>
-  
-        <div class="keyContainer">
-          <p class="keyTitle">Key</p>
-          <div class="keyItem">
-            <div class="completeStatus"></div>
-            <p>Complete</p>
-          </div>
-          <div class="keyItem">
-            <div class="inProgressStatus"></div>
-            <p>In Progress</p>
-          </div>
-          <div class="keyItem">
-            <div class="notStartedStatus"></div>
-            <p>Planned</p>
-          </div>
-        </div>
+  <header class="toolbar" aria-label="Countdown controls">
+    <div class="toolbar-left">
+      <h1 class="app-title">Countdowns</h1>
+      <div class="view-toggle" role="group" aria-label="Layout">
+        <button id="btnCompact" class="segmented active" aria-pressed="true" title="Compact grid view">
+          <span class="material-symbols-outlined">grid_view</span>
+          Compact
+        </button>
+        <button id="btnSpacious" class="segmented" aria-pressed="false" title="Spacious list view">
+          <span class="material-symbols-outlined">view_list</span>
+          Spacious
+        </button>
       </div>
     </div>
-  </div>
 
-      <div class="page">
-        <div class="content">
-          <div class="sortBar">
-            <div class="authBar">
-              <button id="customBtn">+ Custom</button>
-            </div>
-            
-            
-            
-            <div class="sortItems">
-              <span class="material-symbols-outlined gridButton">grid_view</span>
-              <span class="material-symbols-outlined listButton">view_list</span>
-            </div>
-            <div id="customCountdown" class="addCountdownContainer" style="display: none;">
-              <form id="countdownForm">
-                <div class="formColumns">
-                  <!-- Left Column: Info -->
-                  <div class="formColumn">
-                    <div class="formGroup">
-                      <label for="countdownName">Countdown Name</label>
-                      <input type="text" id="countdownName" placeholder="e.g. My Trip">
-                    </div>
-                    <div class="formGroup">
-                      <label for="countdownDate">Date</label>
-                      <input type="date" id="countdownDate">
-                    </div>
-
-                    <div class="formGroup">
-                      <label for="annualCheck">Annual?</label>
-                      <input style="align-self: flex-start;" type="checkbox" id="annualCheck">
-                    </div>
-
-
-                    <div class="formGroup">
-                      <label for="countdownTime">Time</label>
-                      <input type="time" id="countdownTime" value="00:00">
-                    </div>
-                    <div class="formGroup">
-                      <label for="countdownCategory">Category</label>
-                      <select id="countdownCategory">
-                        <option value="Seasonal">Seasonal</option>
-                        <option value="Holidays">Holidays</option>
-                        <option value="Personal">Personal</option>
-                        <option value="Games">Games</option>
-                        <option value="Trips">Trips</option>
-                        <option value="Misc">Misc</option>
-                      </select>
-                    </div>
-                  </div>
-            
-                  <!-- Right Column: Style -->
-                  <div class="formColumn">
-
-                    <div class="formGroup">
-                      <label for="backgroundCol">Background Colour</label>
-                      <input type="color" id="backgroundCol" value="#2b2b2b">
-                    </div>
-                    
-                    
-                    
-
-                    <div class="formGroup">
-                      <label for="textColor">Text Colour</label>
-                      <select id="textColor">
-                        <option value="White">White</option>
-                        <option value="Black">Black</option>
-                        <option value="Blue">Blue</option>
-                        <option value="Grey">Grey</option>
-                      </select>
-                    </div>
-                  </div>
-
-                  <div id="countdownPreview" class="countdownContainer preview" style="margin-top: 1rem;">
-                    <h5>Preview Style</h5>
-                  </div>
-                </div>
-            
-                <!-- Submit Button -->
-                <div class="formSubmitRow">
-                  <button type="submit" class="submitButton">Save Countdown</button>
-                </div>
-              </form>
-            </div>
-          </div>
-
-
-          <div class="categoryContainer gridView">
-
-            <div class="category favoritesCategory">
-              <h3>Favorites
-              <span class="material-symbols-outlined">swap_horiz</span>
-              <div class="sortingMessage">Closest Dates</div>
-              </h3>
-              <p class="addMessage">Click countdowns to add to favorites</p>
-              <div class="countdownWrapper"></div>
-            </div>
-          
-            <div class="category">
-              <h3>Seasonal</h3>
-              <div class="countdownWrapper">
-                <div class="countdownContainer">
-                  <h5>Spring</h5>
-                  <div class="timers">
-                    <div class="days"></div>
-                    <div class="hours"></div>
-                    <div class="minutes"></div>
-                    
-                  </div>
-                </div>
-                <div class="countdownContainer">
-                  <h5>Summer</h5>
-                  <div class="timers">
-                    <div class="days"></div>
-                    <div class="hours"></div>
-                    <div class="minutes"></div>
-                    
-                  </div>
-                </div>
-                <div class="countdownContainer">
-                  <h5>Autumn</h5>
-                  <div class="timers">
-                    <div class="days"></div>
-                    <div class="hours"></div>
-                    <div class="minutes"></div>
-                    
-                  </div>
-                </div>
-                <div class="countdownContainer">
-                  <h5>Winter</h5>
-                  <div class="timers">
-                    <div class="days"></div>
-                    <div class="hours"></div>
-                    <div class="minutes"></div>
-                    
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="category">
-              <h3>Holidays</h3>
-              <div class="countdownWrapper">
-                <div class="countdownContainer">
-                  <h5>Christmas</h5>
-                  <div class="timers">
-                    <div class="days"></div>
-                    <div class="hours"></div>
-                    <div class="minutes"></div>
-                    
-                  </div>
-                </div>
-                <div class="countdownContainer">
-                  <h5>Halloween</h5>
-                  <div class="timers">
-                    <div class="days"></div>
-                    <div class="hours"></div>
-                    <div class="minutes"></div>
-                    
-                  </div>
-                </div>
-              </div>
-            </div> 
-            
-        
-          </div>
-          </div>
+    <div class="toolbar-right">
+      <div class="favorites-sort" role="group" aria-label="Favorites sort">
+        <button id="btnFavSort" class="chip" title="Toggle favorites sorting">
+          <span class="material-symbols-outlined">swap_vert</span>
+          <span id="favSortLabel">Closest first</span>
+        </button>
       </div>
 
+      <div class="filters">
+        <input id="searchInput" type="search" placeholder="Search countdowns…" aria-label="Search countdowns" />
+        <select id="categoryFilter" aria-label="Filter by category">
+          <option value="all">All categories</option>
+          <option value="Seasonal">Seasonal</option>
+          <option value="Holidays">Holidays</option>
+          <option value="Personal">Personal</option>
+          <option value="Games">Games</option>
+          <option value="Trips">Trips</option>
+          <option value="Misc">Misc</option>
+        </select>
       </div>
 
+      <button id="btnAdmin" class="primary">
+        <span class="material-symbols-outlined">add</span>
+        Custom
+      </button>
+    </div>
+  </header>
 
-    <script src="scripts/nav.js"></script>
-    <script src="scripts/countdowns.js"></script>
-    <script type="module">
-    import { googleLogin, onAuth, auth } from './scripts/firebaseAuth.js';
-    import { saveCountdown, loadCountdowns, deleteCountdownById } from './scripts/countdown-db.js';
-    window.deleteCountdown = deleteCountdownById;
+  <main class="page" id="pageRoot">
+    <section class="category favorites" aria-labelledby="favoritesHeading">
+      <div class="category-header">
+        <h2 id="favoritesHeading">Favorites</h2>
+        <p class="meta"><span id="favMeta">Closest dates</span></p>
+      </div>
+      <p id="favEmpty" class="empty-state">Click any countdown and choose “Add to Favorites”.</p>
+      <div id="favoritesWrap" class="wrap"></div>
+    </section>
 
-    const ADMIN_UID = "GUOg1pBxNnPZyeLCM4zHAV4Vx4C3";
+    <section id="categoriesSection">
+      <!-- Categories will be injected -->
+    </section>
 
-    const customBtn = document.getElementById('customBtn');
-    const customForm = document.getElementById('customCountdown');
-    const form = document.getElementById('countdownForm');
+    <template id="countdownTemplate">
+      <article class="card" tabindex="0">
+        <header class="card-head">
+          <h3 class="card-title"></h3>
+          <button class="icon-btn delete-btn" title="Delete countdown" aria-label="Delete countdown" hidden>
+            <span class="material-symbols-outlined">delete</span>
+          </button>
+        </header>
+        <div class="timers">
+          <div class="timer">
+            <div class="num" data-part="days">—</div>
+            <div class="label">Days</div>
+          </div>
+          <div class="timer">
+            <div class="num" data-part="hours">—</div>
+            <div class="label">Hours</div>
+          </div>
+          <div class="timer">
+            <div class="num" data-part="minutes">—</div>
+            <div class="label">Minutes</div>
+          </div>
+        </div>
+        <div class="date" data-part="date"></div>
+      </article>
+    </template>
+  </main>
 
-    // Always load and render countdowns
-    (async () => {
-      const userCountdowns = await loadCountdowns();
-      window.renderUserCountdowns(userCountdowns);
-    })();
+  <dialog id="actionsDialog">
+    <form method="dialog" class="dialog-inner">
+      <header class="dialog-head">
+        <h3 id="dialogLabel">Countdown</h3>
+        <button class="icon-btn" value="cancel" aria-label="Close">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </header>
 
-    // Auth state: update UI
-    onAuth(async (user) => {
-      if (!user) {
-        // Not logged in
-        customBtn.textContent = "Admin";
-        customBtn.style.display = "";
-        customBtn.disabled = false;
-        customForm.style.display = "none";
-      } else if (user.uid !== ADMIN_UID) {
-        // Wrong account: hide everything
-        customBtn.style.display = "none";
-        customForm.style.display = "none";
-      } else {
-        // Logged in as admin
-        customBtn.textContent = "+ Custom";
-        customBtn.style.display = "";
-        customBtn.disabled = false;
-        // Keep form hidden until toggled
-      }
-    });
+      <div class="dialog-body">
+        <button id="btnFavToggle" class="primary full"></button>
+        <button id="btnDelete" class="danger full" hidden>Delete countdown</button>
+      </div>
 
-    // Button logic
-    customBtn.addEventListener('click', async () => {
-      const user = auth.currentUser;
-      if (!user) {
-        // Not logged in: prompt login
-        try {
-          await googleLogin();
-        } catch (err) {
-          console.error("Login failed:", err);
-        }
-      } else if (user.uid === ADMIN_UID) {
-        // Logged in as admin: toggle form
-        customForm.style.display = customForm.style.display === "none" ? "block" : "none";
-      }
-      // Else (wrong user), do nothing (button is hidden anyway)
-    });
+      <footer class="dialog-foot">
+        <button value="cancel" class="ghost full">Close</button>
+      </footer>
+    </form>
+  </dialog>
 
-    // Submit form (admin only)
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const user = auth.currentUser;
-      if (!user || user.uid !== ADMIN_UID) {
-        alert("Only the admin can create countdowns.");
-        return;
-      }
+  <section id="adminPanel" hidden>
+    <form id="adminForm" class="admin-form">
+      <h2>Add a custom countdown</h2>
+      <div class="form-grid">
+        <label>
+          <span>Label</span>
+          <input id="fLabel" type="text" required />
+        </label>
+        <label>
+          <span>Date</span>
+          <input id="fDate" type="date" required />
+        </label>
+        <label>
+          <span>Time</span>
+          <input id="fTime" type="time" value="00:00" />
+        </label>
+        <label>
+          <span>Category</span>
+          <select id="fCategory">
+            <option>Seasonal</option>
+            <option>Holidays</option>
+            <option>Personal</option>
+            <option>Games</option>
+            <option>Trips</option>
+            <option>Misc</option>
+          </select>
+        </label>
+        <label class="checkbox">
+          <input id="fAnnual" type="checkbox" />
+          <span>Repeat annually</span>
+        </label>
+      </div>
+      <div class="form-actions">
+        <button type="submit" class="primary">
+          <span class="material-symbols-outlined">save</span>
+          Save
+        </button>
+      </div>
+    </form>
+  </section>
 
-      const data = {
-        label: document.getElementById('countdownName').value.trim(),
-        date: document.getElementById('countdownDate').value,
-        time: document.getElementById('countdownTime').value,
-        category: document.getElementById('countdownCategory').value,
-        backgroundCol: document.getElementById('backgroundCol').value,
-        textColor: document.getElementById('textColor').value,
-        annual: document.getElementById('annualCheck').checked
-      };
-
-      if (!data.label || !data.date) {
-        alert("Please enter at least a name and a date.");
-        return;
-      }
-
-      await saveCountdown(data);
-      form.reset();
-      customForm.style.display = 'none';
-    });
-
-
-    </script>
-    
-    
-    
+  <script type="module" src="scripts/countdowns.js"></script>
 </body>
+</html>

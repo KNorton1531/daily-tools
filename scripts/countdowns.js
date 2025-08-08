@@ -1,524 +1,444 @@
-document.addEventListener("DOMContentLoaded", function () {
-    console.log("✅ Countdown Script Loaded");
+import { googleLogin, onAuth, auth } from './firebaseAuth.js';
+import { saveCountdown, loadCountdowns, deleteCountdownById } from './countdown-db.js';
 
-    const countdowns = [
-        { title: "Spring", date: "03-01T00:00:00", annual: true },
-        { title: "Summer", date: "06-01T00:00:00", annual: true },
-        { title: "Autumn", date: "09-01T00:00:00", annual: true },
-        { title: "Winter", date: "12-01T00:00:00", annual: true },
-        { title: "Christmas", date: "12-25T00:00:00", annual: true },
-        { title: "Halloween", date: "10-31T00:00:00", annual: true },
-    ];
+/* ---------- State ---------- */
+const BUILT_INS = [
+  { label: "Spring",    date: "03-01T00:00:00", annual: true, category: "Seasonal" },
+  { label: "Summer",    date: "06-01T00:00:00", annual: true, category: "Seasonal" },
+  { label: "Autumn",    date: "09-01T00:00:00", annual: true, category: "Seasonal" },
+  { label: "Winter",    date: "12-01T00:00:00", annual: true, category: "Seasonal" },
+  { label: "Christmas", date: "12-25T00:00:00", annual: true, category: "Holidays" },
+  { label: "Halloween", date: "10-31T00:00:00", annual: true, category: "Holidays" },
+];
 
-    const categoryContainer = document.querySelector(".categoryContainer");
-    const favoritesContainer = document.querySelector(".favoritesCategory .countdownWrapper");
-    const addMessage = document.querySelector(".favoritesCategory .addMessage");
-    const sortButton = document.querySelector(".favoritesCategory h3 span");
-    const sortingMessage = document.querySelector(".favoritesCategory .sortingMessage");
-    const gridViewBtn = document.querySelector(".gridButton");
-    const listViewBtn = document.querySelector(".listButton");
+const ADMIN_UID = "GUOg1pBxNnPZyeLCM4zHAV4Vx4C3";
 
-    let favoriteCountdowns = JSON.parse(localStorage.getItem("favorites")) || [];
-    let isSortedByTime = localStorage.getItem("favoritesSorting") !== null 
-        ? JSON.parse(localStorage.getItem("favoritesSorting")) 
-        : true;
-    let isGridView = localStorage.getItem("isGridView") === "true";
+const $ = (sel, root=document) => root.querySelector(sel);
+const $$ = (sel, root=document) => Array.from(root.querySelectorAll(sel));
 
-    function getExactCountdown(targetDate, isGridView) {
-        const now = new Date();
-        let timeDiff = targetDate - now;
+const refs = {
+  pageRoot: $('#pageRoot'),
+  categoriesSection: $('#categoriesSection'),
+  favoritesWrap: $('#favoritesWrap'),
+  favEmpty: $('#favEmpty'),
+  favMeta: $('#favMeta'),
+  favSortLabel: $('#favSortLabel'),
+  btnFavSort: $('#btnFavSort'),
+  btnAdmin: $('#btnAdmin'),
+  adminPanel: $('#adminPanel'),
+  adminForm: $('#adminForm'),
+  fLabel: $('#fLabel'),
+  fDate: $('#fDate'),
+  fTime: $('#fTime'),
+  fCategory: $('#fCategory'),
+  fAnnual: $('#fAnnual'),
+  btnCompact: $('#btnCompact'),
+  btnSpacious: $('#btnSpacious'),
+  searchInput: $('#searchInput'),
+  categoryFilter: $('#categoryFilter'),
+  tplCard: $('#countdownTemplate'),
+  dlg: $('#actionsDialog'),
+  dlgLabel: $('#dialogLabel'),
+  dlgFavToggle: $('#btnFavToggle'),
+  dlgDelete: $('#btnDelete'),
+};
 
-        if (timeDiff < 0) return null;
+const LS_KEYS = {
+  favorites: 'countdown_favorites_v2',
+  layout: 'countdown_layout',
+  favSortAsc: 'countdown_fav_sort_asc',
+  filterText: 'countdown_filter_text',
+  filterCategory: 'countdown_filter_cat',
+};
 
-        const totalDays = isGridView
-            ? Math.ceil(timeDiff / (1000 * 60 * 60 * 24))
-            : Math.floor(timeDiff / (1000 * 60 * 60 * 24));
-        const totalHours = Math.floor((timeDiff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-        const totalMinutes = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
+let allCountdowns = [];       // normalized
+let userDocs = [];            // firestore docs
+let favorites = loadFavoritesFromStorage(); // array of keys
+let favSortAsc = loadBoolean(LS_KEYS.favSortAsc, true);
+let layout = loadLayout();
+let filterText = localStorage.getItem(LS_KEYS.filterText) || '';
+let filterCategory = localStorage.getItem(LS_KEYS.filterCategory) || 'all';
+let ticking = null;
+let lastTick = 0;
 
-        return { totalDays, totalHours, totalMinutes, timeDiff };
+/* ---------- Boot ---------- */
+init();
 
+function init(){
+  refs.btnCompact.addEventListener('click', () => setLayout('compact'));
+  refs.btnSpacious.addEventListener('click', () => setLayout('spacious'));
+  setLayout(layout);
+
+  refs.btnFavSort.addEventListener('click', () => {
+    favSortAsc = !favSortAsc;
+    localStorage.setItem(LS_KEYS.favSortAsc, JSON.stringify(favSortAsc));
+    refs.favSortLabel.textContent = favSortAsc ? 'Closest first' : 'Furthest first';
+    render();
+  });
+
+  refs.searchInput.value = filterText;
+  refs.searchInput.addEventListener('input', evt => {
+    filterText = evt.currentTarget.value.trim().toLowerCase();
+    localStorage.setItem(LS_KEYS.filterText, filterText);
+    render();
+  });
+
+  refs.categoryFilter.value = filterCategory;
+  refs.categoryFilter.addEventListener('change', evt => {
+    filterCategory = evt.currentTarget.value;
+    localStorage.setItem(LS_KEYS.filterCategory, filterCategory);
+    render();
+  });
+
+  refs.btnAdmin.addEventListener('click', onAdminButton);
+  refs.adminForm.addEventListener('submit', onAdminSubmit);
+
+  refs.dlg.addEventListener('close', () => {
+    refs.dlgDelete.hidden = true;
+  });
+
+  onAuth(async (user) => {
+    const isAdmin = !!user && user.uid === ADMIN_UID;
+    refs.btnAdmin.querySelector('.material-symbols-outlined').textContent = isAdmin ? 'add' : 'admin_panel_settings';
+    refs.btnAdmin.lastChild.nodeValue = isAdmin ? ' Custom' : ' Admin';
+    refs.adminPanel.hidden = !isAdmin;
+
+    await hydrateCountdowns();
+    render();
+  });
+
+  // Initial fetch before auth if needed
+  hydrateCountdowns().then(() => {
+    render();
+  });
+
+  startTicker();
+}
+
+/* ---------- Data ---------- */
+function normalizeCountdown(entry){
+  const key = entry.key ?? makeKey(entry.label, entry.date, entry.annual);
+  const category = entry.category || 'Misc';
+  return {
+    key,
+    label: entry.label,
+    category,
+    annual: !!entry.annual,
+    dateISO: normalizeDateISO(entry.date),
+    ownedId: entry.id || null,
+  };
+}
+
+function makeKey(label, dateStr, annual){
+  const base = label.trim().toLowerCase().replace(/\s+/g,'-').slice(0,60);
+  const suffix = annual ? 'annual' : (dateStr || 'oneday');
+  return `${base}__${suffix}`;
+}
+
+function normalizeDateISO(dateStr){
+  if (!dateStr) return null;
+  // Accept "MM-DDThh:mm:ss" for annuals or full "YYYY-MM-DDThh:mm"
+  const hasYear = /^\d{4}-/.test(dateStr);
+  if (hasYear) return dateStr;
+  const now = new Date();
+  return `${now.getFullYear()}-${dateStr}`;
+}
+
+function nextTargetDate(cd){
+  const now = new Date();
+  let d = new Date(cd.dateISO);
+  if (cd.annual){
+    const month = d.getMonth();
+    const date = d.getDate();
+    const time = d.toTimeString().split(' ')[0];
+    let candidate = new Date(`${now.getFullYear()}-${String(month+1).padStart(2,'0')}-${String(date).padStart(2,'0')}T${time}`);
+    if (candidate < now) candidate.setFullYear(candidate.getFullYear()+1);
+    return candidate;
+  }
+  return d;
+}
+
+function msBreakdown(toDate, compact){
+  const now = new Date();
+  const diff = toDate - now;
+  if (diff <= 0) return null;
+  const days = compact ? Math.ceil(diff/86400000) : Math.floor(diff/86400000);
+  const hours = Math.floor((diff % 86400000)/3600000);
+  const mins = Math.floor((diff % 3600000)/60000);
+  return {diff, days, hours, mins};
+}
+
+function formatDateForUI(d){
+  const day = d.getDate();
+  const m = d.toLocaleString('en-GB',{month:'short'});
+  const y = d.getFullYear();
+  const nth = (n)=> (n>3 && n<21) ? 'th' : ['th','st','nd','rd'][Math.min(n%10,3)];
+  return `${day}${nth(day)} ${m} ${y}`;
+}
+
+async function hydrateCountdowns(){
+  const docs = await loadCountdowns();
+  userDocs = docs;
+  const merged = [
+    ...BUILT_INS,
+    ...docs.map(d => ({ label:d.label, date:`${d.date}T${(d.time && d.time.trim())?d.time:'00:00'}`, annual:!!d.annual, category:d.category, id:d.id })),
+  ].map(normalizeCountdown);
+
+  allCountdowns = dedupeByKey(merged);
+  migrateFavoritesIfNeeded(); // one-off migration from old schema
+}
+
+/* ---------- Favorites ---------- */
+function loadFavoritesFromStorage(){
+  try{
+    const raw = localStorage.getItem(LS_KEYS.favorites);
+    if (!raw) return [];
+    const arr = JSON.parse(raw);
+    return Array.isArray(arr) ? arr.filter(Boolean) : [];
+  }catch{ return []; }
+}
+
+function saveFavorites(){
+  localStorage.setItem(LS_KEYS.favorites, JSON.stringify(favorites));
+}
+
+function migrateFavoritesIfNeeded(){
+  // Old storage was an array of titles
+  try{
+    const legacy = JSON.parse(localStorage.getItem('favorites') || 'null');
+    if (!legacy || !Array.isArray(legacy) || legacy.length === 0) return;
+    const keys = [];
+    for (const title of legacy){
+      const match = allCountdowns.find(c => c.label === title);
+      if (match) keys.push(match.key);
     }
-
-    function updateFavorites() {
-        favoritesContainer.innerHTML = "";
-
-        let favoriteElements = favoriteCountdowns.map(title => {
-            
-            const event = countdowns.find(item => item.title === title);
-            if (!event) return null;
-
-            const now = new Date();
-            let targetDate;
-
-            if (event.annual) {
-                targetDate = new Date(`${now.getFullYear()}-${event.date}`);
-                if (targetDate < now) {
-                    targetDate = new Date(`${now.getFullYear() + 1}-${event.date}`);
-                }
-            } else {
-                targetDate = new Date(event.date);
-            }
-
-            const timeDiff = targetDate - now;
-
-            const originalCountdown = Array.from(document.querySelectorAll(".countdownContainer")).find(container =>
-                container.querySelector("h5")?.textContent.trim() === title
-            );
-
-            
-
-            if (originalCountdown) {
-                const clone = originalCountdown.cloneNode(true);
-                clone.classList.add("favorite");
-
-                clone.addEventListener("click", function (e) {
-                    e.stopImmediatePropagation(); // ✅ Prevent document click from firing right after
-                    const confirmed = confirm(`Remove "${title}" from favorites?`);
-                    if (confirmed) {
-                        toggleFavorite(title);
-                    }
-                });
-                
-                
-                  
-
-                return { element: clone, timeDiff };
-            }
-            return null;
-        }).filter(item => item !== null);
-
-        favoriteElements.sort((a, b) => isSortedByTime ? a.timeDiff - b.timeDiff : b.timeDiff - a.timeDiff);
-
-        favoriteElements.forEach(item => favoritesContainer.appendChild(item.element));
-
-        addMessage.style.display = favoriteCountdowns.length > 0 ? "none" : "block";
-
-        sortButton.style.background = isSortedByTime ? "#c5c5c5" : "#fff";
-        sortingMessage.textContent = isSortedByTime ? "Closest Dates" : "Furthest Dates";
+    if (keys.length){
+      favorites = Array.from(new Set([...favorites, ...keys]));
+      saveFavorites();
     }
+    localStorage.removeItem('favorites');
+    localStorage.removeItem('favoritesSorting');
+    localStorage.removeItem('isGridView');
+  }catch{ /* ignore */ }
+}
 
-    function toggleView(isGrid) {
-        localStorage.setItem("isGridView", isGrid);
-        categoryContainer.classList.remove("gridView", "listView");
-        categoryContainer.classList.add(isGrid ? "gridView" : "listView");
+function toggleFavorite(key){
+  const i = favorites.indexOf(key);
+  if (i === -1) favorites.push(key);
+  else favorites.splice(i,1);
+  saveFavorites();
+  render();
+}
 
-        if (gridViewBtn && listViewBtn) {
-            gridViewBtn.style.background = isGrid ? "#c5c5c5" : "#fff";
-            listViewBtn.style.background = isGrid ? "#fff" : "#c5c5c5";
-        }
+/* ---------- Layout ---------- */
+function setLayout(next){
+  layout = next;
+  localStorage.setItem(LS_KEYS.layout, next);
+  refs.btnCompact.classList.toggle('active', next === 'compact');
+  refs.btnSpacious.classList.toggle('active', next === 'spacious');
+  render();
+}
+function loadLayout(){
+  const saved = localStorage.getItem(LS_KEYS.layout);
+  return saved === 'spacious' ? 'spacious' : 'compact';
+}
 
-        updateCountdowns(isGrid);
+/* ---------- Rendering ---------- */
+function render(){
+  const compact = layout === 'compact';
+
+  const categoryMap = groupByCategory(filterCountdowns(allCountdowns, filterText, filterCategory));
+  const favSet = new Set(favorites);
+
+  renderFavorites(compact, favSet);
+  renderCategories(categoryMap, compact, favSet);
+
+  refs.favSortLabel.textContent = favSortAsc ? 'Closest first' : 'Furthest first';
+}
+
+function filterCountdowns(list, text, cat){
+  const t = text.trim().toLowerCase();
+  return list.filter(c => {
+    const txtOk = !t || c.label.toLowerCase().includes(t);
+    const catOk = cat === 'all' || c.category === cat;
+    return txtOk && catOk;
+  });
+}
+
+function groupByCategory(list){
+  const map = new Map();
+  for (const c of list){
+    if (!map.has(c.category)) map.set(c.category, []);
+    map.get(c.category).push(c);
+  }
+  return map;
+}
+
+function renderFavorites(compact, favSet){
+  refs.favoritesWrap.classList.toggle('compact', compact);
+  refs.favoritesWrap.classList.toggle('spacious', !compact);
+  refs.favoritesWrap.classList.add('wrap');
+
+  const favs = allCountdowns.filter(c => favSet.has(c.key));
+  const enriched = favs.map(c => ({ cd:c, target: nextTargetDate(c) }))
+                       .filter(x => x.target && x.target > new Date())
+                       .map(x => ({ ...x, parts: msBreakdown(x.target, compact) }))
+                       .filter(x => x.parts);
+
+  enriched.sort((a,b) => favSortAsc ? a.parts.diff - b.parts.diff : b.parts.diff - a.parts.diff);
+
+  refs.favoritesWrap.replaceChildren(...enriched.map(x => createCard(x.cd, x.parts, x.target, { inFavorites:true, compact })));
+
+  refs.favEmpty.hidden = enriched.length > 0;
+  refs.favMeta.textContent = enriched.length ? `${enriched.length} saved` : 'No favorites yet';
+}
+
+function renderCategories(categoryMap, compact, favSet){
+  const frag = document.createDocumentFragment();
+  for (const [cat, list] of categoryMap){
+    const wrap = document.createElement('section');
+    wrap.className = 'category';
+    wrap.innerHTML = `<div class="category-header"><h2>${cat}</h2></div>`;
+    const grid = document.createElement('div');
+    grid.className = 'wrap ' + (compact ? 'compact':'spacious');
+
+    // Exclude ones that are in favorites? Keep them visible but fine to duplicate?
+    for (const c of list){
+      const target = nextTargetDate(c);
+      const parts = target ? msBreakdown(target, compact) : null;
+      grid.appendChild(createCard(c, parts, target, { inFavorites: favSet.has(c.key), compact }));
     }
+    wrap.appendChild(grid);
+    frag.appendChild(wrap);
+  }
+  refs.categoriesSection.replaceChildren(frag);
+}
 
-    function findCategoryWrapper(categoryName) {
-        const allCategories = document.querySelectorAll(".category");
-        for (let cat of allCategories) {
-            const heading = cat.querySelector("h3");
-            if (heading && heading.textContent.trim().toLowerCase() === categoryName.toLowerCase()) {
-                return cat.querySelector(".countdownWrapper");
-            }
-        }
-    
-        // If not found, create a new category
-        const categoryContainer = document.querySelector(".categoryContainer");
-    
-        const newCategory = document.createElement("div");
-        newCategory.classList.add("category");
-    
-        const heading = document.createElement("h3");
-        heading.textContent = categoryName;
-    
-        const wrapper = document.createElement("div");
-        wrapper.classList.add("countdownWrapper");
-    
-        newCategory.appendChild(heading);
-        newCategory.appendChild(wrapper);
-        categoryContainer.appendChild(newCategory);
-    
-        return wrapper;
-    }
-    
-      
+function createCard(cd, parts, targetDate, opts){
+  const node = refs.tplCard.content.firstElementChild.cloneNode(true);
+  node.dataset.key = cd.key;
+  node.dataset.ownedId = cd.ownedId || '';
+  node.querySelector('.card-title').textContent = cd.label;
 
-    function toggleFavorite(title) {
-        const index = favoriteCountdowns.indexOf(title);
+  const dEl = node.querySelector('[data-part="days"]');
+  const hEl = node.querySelector('[data-part="hours"]');
+  const mEl = node.querySelector('[data-part="minutes"]');
+  const dateEl = node.querySelector('[data-part="date"]');
 
-        if (index === -1) {
-            favoriteCountdowns.push(title);
-        } else {
-            favoriteCountdowns.splice(index, 1);
-        }
+  if (parts){
+    dEl.textContent = parts.days;
+    hEl.textContent = parts.hours;
+    mEl.textContent = parts.mins;
+    dateEl.textContent = formatDateForUI(targetDate);
+  } else {
+    dEl.textContent = '—';
+    hEl.textContent = '—';
+    mEl.textContent = '—';
+    dateEl.textContent = 'Ended';
+    node.classList.add('ended');
+  }
 
-        localStorage.setItem("favorites", JSON.stringify(favoriteCountdowns));
-        updateFavorites();
-    }
-
-    function toggleSort() {
-        isSortedByTime = !isSortedByTime;
-        localStorage.setItem("favoritesSorting", JSON.stringify(isSortedByTime));
-
-        sortButton.style.background = isSortedByTime ? "#c5c5c5" : "#fff";
-        sortingMessage.textContent = isSortedByTime ? "Closest Dates" : "Furthest Dates";
-
-        updateFavorites();
-    }
-
-    function updateCountdowns(isGridView) {
-        console.log("🔄 Updating countdowns...");
-
-        document.querySelectorAll(".countdownContainer").forEach(container => {
-            const title = container.querySelector("h5")?.textContent.trim();
-            const event = countdowns.find(e => e.title === title);
-            if (!event) return;
-
-            
-
-            const now = new Date();
-            let targetDate;
-            if (event.annual) {
-              const hasYear = event.date.match(/^\d{4}-/); // e.g., starts with "2025-"
-            
-              if (hasYear) {
-                // Annual countdown using full ISO format like "2025-03-14T22:14:00"
-                const splitDate = event.date.split("T")[0]; // "2025-03-14"
-                const timePart = event.date.split("T")[1] || "00:00:00";
-                const [, month, day] = splitDate.split("-"); // ignore the year
-                const thisYearDate = new Date(`${now.getFullYear()}-${month}-${day}T${timePart}`);
-                targetDate = thisYearDate < now
-                  ? new Date(`${now.getFullYear() + 1}-${month}-${day}T${timePart}`)
-                  : thisYearDate;
-              } else {
-                // Annual countdown using format like "12-25T00:00:00"
-                const [monthDay, timePart] = event.date.split("T");
-                const [month, day] = monthDay.split("-");
-                const thisYearDate = new Date(`${now.getFullYear()}-${month}-${day}T${timePart || "00:00:00"}`);
-                targetDate = thisYearDate < now
-                  ? new Date(`${now.getFullYear() + 1}-${month}-${day}T${timePart || "00:00:00"}`)
-                  : thisYearDate;
-              }
-            } else {
-              // One-time countdown
-              targetDate = new Date(event.date);
-            }
-            
-            
-
-            if (event.annual && targetDate < now) {
-                targetDate = new Date(`${now.getFullYear() + 1}-${event.date}`);
-            }
-
-            const countdown = getExactCountdown(targetDate, isGridView);
-            if (!countdown) {
-                if (!event.annual && targetDate < now) {
-                    container.innerHTML = `
-                        <h5>${event.title}</h5>
-                        <p class="countdownEndedMessage">🎉 This countdown has ended!</p>
-                    `;
-                    container.classList.add("ended");
-            
-                    // Ensure overlay still shows so the user can delete it
-                    container.onclick = function () {
-                        showOverlay(event.title, container.dataset.countdownId || null, container);
-                    };
-            
-                    return;
-                }
-                return;
-            }
-            
-            
-
-            container.querySelector(".days").innerHTML = `<div class="timerValue">${countdown.totalDays}</div><div class="timerLabel">Days</div>`;
-
-            let dateDiv = container.querySelector(".countdownDate");
-            if (!dateDiv) {
-                dateDiv = document.createElement("div");
-                dateDiv.className = "countdownDate";
-                container.appendChild(dateDiv);
-            }
-            dateDiv.textContent = formatDateDisplay(targetDate);
-
-
-            if (isGridView) {
-                container.querySelector(".hours").innerHTML = "";
-                container.querySelector(".minutes").innerHTML = "";
-            } else {
-                container.querySelector(".hours").innerHTML = `<div class="timerValue">${countdown.totalHours}</div><div class="timerLabel">Hours</div>`;
-                container.querySelector(".minutes").innerHTML = `<div class="timerValue">${countdown.totalMinutes}</div><div class="timerLabel">Minutes</div>`;
-
-            }
-        });
-
-        updateFavorites();
-    }
-
-    function formatDateDisplay(dateObj) {
-        if (!(dateObj instanceof Date)) return '';
-        const day = dateObj.getDate();
-        const month = dateObj.toLocaleString('en-GB', { month: 'short' });
-        const year = dateObj.getFullYear();
-        // Get ordinal suffix (st, nd, rd, th)
-        function nth(d) {
-            if (d > 3 && d < 21) return 'th';
-            switch (d % 10) {
-                case 1:  return "st";
-                case 2:  return "nd";
-                case 3:  return "rd";
-                default: return "th";
-            }
-        }
-        return `${day}${nth(day)} ${month} ${year}`;
-    }
-    
-
-    sortButton.addEventListener("click", toggleSort);
-    if (gridViewBtn) gridViewBtn.addEventListener("click", () => toggleView(true));
-    if (listViewBtn) listViewBtn.addEventListener("click", () => toggleView(false));
-
-    document.querySelectorAll(".countdownContainer").forEach(container => {
-        const title = container.querySelector("h5")?.textContent.trim();
-        if (!title) return;
-        const event = countdowns.find(e => e.title === title);
-        if (!event) return;
-    
-        container.addEventListener("click", function () {
-            showOverlay(title, null, this);
-          });
-                   
+  const deleteBtn = node.querySelector('.delete-btn');
+  if (cd.ownedId) {
+    onAuth(user => {
+      const isAdmin = !!user && user.uid === ADMIN_UID;
+      deleteBtn.hidden = !isAdmin;
     });
+  }
 
-    document.addEventListener("click", function (e) {
-        const activeOverlay = document.querySelector(".countdownOverlay");
-    
-        if (!activeOverlay) return;
-    
-        const isClickInsideOverlay = e.target.closest(".countdownOverlay");
-        const isClickInsideCountdown = e.target.closest(".countdownContainer");
-    
-        // If the click is NOT inside either the overlay or a countdown, remove the overlay
-        if (!isClickInsideOverlay && !isClickInsideCountdown) {
-            activeOverlay.remove();
-        }
-    });
-    
-    
-
-    updateCountdowns(isGridView);
-    toggleView(isGridView);
-    setInterval(() => updateCountdowns(categoryContainer.classList.contains("gridView")), 60000);
-
-    window.renderUserCountdowns = function (userCountdowns) {
-        userCountdowns.forEach(entry => {
-            // Skip if already exists in hardcoded list (optional)
-            if (countdowns.find(c => c.title === entry.label)) return;
-
-            let timePart = entry.time && entry.time.trim() !== "" ? entry.time : "00:00";
-            let fullDate = `${entry.date}T${timePart}`;
-
-            console.log(`🛠️ Using full date string: ${fullDate}`);
-            console.log(`⏱️ Parsing date for "${entry.label}":`, fullDate);
-            console.log("Parsed value:", Date.parse(fullDate));
-            
-    
-            // Add to the global countdowns array
-            countdowns.push({
-                title: entry.label,
-                date: fullDate,
-                annual: entry.annual
-              });         
-    
-            // Render to appropriate category
-            const categoryWrapper = findCategoryWrapper(entry.category);
-    
-            if (categoryWrapper) {
-                const container = document.createElement("div");
-                container.classList.add("countdownContainer");
-                container.style.color = entry.textColor || "#000";
-                container.dataset.countdownId = entry.id;
-
-            
-                // Add delete button
-                const deleteBtn = document.createElement("span");
-                deleteBtn.classList.add("material-symbols-outlined", "deleteCountdown");
-                deleteBtn.textContent = "delete";
-                deleteBtn.title = "Delete Countdown";
-                deleteBtn.style.position = "absolute";
-                deleteBtn.style.top = "8px";
-                deleteBtn.style.left = "8px";
-                deleteBtn.style.display = "none";
-                deleteBtn.style.cursor = "pointer";
-            
-                // Show/hide on hover
-                container.addEventListener("mouseenter", () => deleteBtn.style.display = "block");
-                container.addEventListener("mouseleave", () => deleteBtn.style.display = "none");
-            
-                deleteBtn.addEventListener("click", async (e) => {
-                    e.stopPropagation();
-                    const confirmed = confirm(`Delete countdown "${entry.label}"?`);
-                    if (confirmed) {
-                        await window.deleteCountdown(entry.id);
-                        container.remove();
-                    }
-                });
-            
-                container.appendChild(deleteBtn);
-            
-                // Insert countdown content
-                container.innerHTML += `
-                    <h5>${entry.label}</h5>
-                    <div class="timers">
-                        <div class="days"></div>
-                        <div class="hours"></div>
-                        <div class="minutes"></div>
-                    </div>
-                `;
-
-            
-                categoryWrapper.appendChild(container);
-
-                let targetDate = new Date(fullDate);
-                // If annual, update year if needed
-                if (entry.annual) {
-                    const now = new Date();
-                    if (targetDate < now) {
-                        targetDate.setFullYear(now.getFullYear() + 1);
-                    }
-                }
-                let dateDiv = document.createElement("div");
-                dateDiv.className = "countdownDate";
-                dateDiv.textContent = formatDateDisplay(targetDate);
-                container.appendChild(dateDiv);
-            
-                container.addEventListener("click", function () {
-                    showOverlay(entry.label, entry.id, this); // ✅ 'this' refers to the clicked container
-                  });
-                  
-                                    
-            }
-            
-        });
-    
-        // Refresh all countdown timers
-        updateCountdowns(isGridView);
-    };
-
-    const overlay = document.getElementById("countdownOverlay");
-    const overlayLabel = document.getElementById("overlayLabel");
-    const overlayFavoriteBtn = document.getElementById("overlayFavorite");
-    const overlayDeleteBtn = document.getElementById("overlayDelete");
-    let currentOverlayTitle = null;
-    let currentOverlayId = null;
-
-    function showOverlay(title, id = null, container) {
-        // Remove any existing overlays first
-        document.querySelectorAll(".countdownOverlay").forEach(el => el.remove());
-    
-        // Slight delay so the click event doesn't immediately close this new overlay
-        setTimeout(() => {
-            const overlay = document.createElement("div");
-            overlay.classList.add("countdownOverlay");
-    
-            const label = document.createElement("h4");
-            label.textContent = title;
-    
-            const favoriteBtn = document.createElement("button");
-            favoriteBtn.className = "favoriteBtn";
-            const isFavorite = favoriteCountdowns.includes(title);
-            favoriteBtn.textContent = isFavorite ? "Remove from Favorites" : "Add to Favorites";
-    
-            favoriteBtn.onclick = () => {
-                toggleFavorite(title);
-                overlay.remove();
-            };
-    
-            overlay.appendChild(label);
-            overlay.appendChild(favoriteBtn);
-    
-            if (id) {
-                const deleteBtn = document.createElement("button");
-                deleteBtn.className = "deleteBtn";
-                deleteBtn.textContent = "Delete Countdown";
-    
-                deleteBtn.onclick = async () => {
-                    const confirmed = confirm(`Delete "${title}"?`);
-                    if (confirmed) {
-                        await window.deleteCountdown(id);
-                        const toRemove = document.querySelector(`[data-countdown-id="${id}"]`);
-                        if (toRemove) toRemove.remove();
-                        overlay.remove();
-                    }
-                };
-    
-                overlay.appendChild(deleteBtn);
-            }
-    
-            container.style.position = "relative";
-            container.appendChild(overlay);
-        }, 0);
+  node.addEventListener('click', (e) => openActionsDialog(cd));
+  node.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      openActionsDialog(cd);
     }
-    
-      
-      
-      
+  });
 
-    overlayFavoriteBtn.onclick = () => {
-        if (!currentOverlayTitle) return;
-    
-        const isCurrentlyFavorite = favoriteCountdowns.includes(currentOverlayTitle);
-    
-        const action = isCurrentlyFavorite ? "Remove from" : "Add to";
+  deleteBtn.addEventListener('click', async (e) => {
+    e.stopPropagation();
+    if (!cd.ownedId) return;
+    if (!confirm(`Delete "${cd.label}"?`)) return;
+    await deleteCountdownById(cd.ownedId);
+    await hydrateCountdowns();
+    render();
+  });
 
-    
-        toggleFavorite(currentOverlayTitle);
-    
-        // Update text label and UI
-        const isNowFavorite = favoriteCountdowns.includes(currentOverlayTitle);
-        overlayFavoriteBtn.textContent = isNowFavorite ? "Remove from Favorites" : "Add to Favorites";
-    
-        overlay.style.display = "none";
-    };
-    
-    
-    
-      
+  return node;
+}
 
-    overlayDeleteBtn.onclick = async () => {
-        if (currentOverlayId && confirm("Are you sure you want to delete this countdown?")) {
-          await window.deleteCountdown(currentOverlayId);
-      
-          // Remove from DOM using data-id match
-          const toRemove = document.querySelector(`[data-countdown-id="${currentOverlayId}"]`);
-          if (toRemove) toRemove.remove();
-      
-          overlay.style.display = "none";
-        }
-      };
-      
+/* ---------- Dialog ---------- */
+function openActionsDialog(cd){
+  const isFav = favorites.includes(cd.key);
+  refs.dlgLabel.textContent = cd.label;
+  refs.dlgFavToggle.textContent = isFav ? 'Remove from Favorites' : 'Add to Favorites';
+  refs.dlgFavToggle.onclick = () => { toggleFavorite(cd.key); refs.dlg.close(); };
+  refs.dlgDelete.hidden = !cd.ownedId;
+  refs.dlgDelete.onclick = async () => {
+    if (!cd.ownedId) return;
+    if (!confirm(`Delete "${cd.label}"?`)) return;
+    await deleteCountdownById(cd.ownedId);
+    await hydrateCountdowns();
+    render();
+    refs.dlg.close();
+  };
+  refs.dlg.showModal();
+}
 
-      document.addEventListener("click", (e) => {
-        if (
-          overlay.style.display === "flex" &&
-          !overlay.contains(e.target) &&
-          !e.target.closest(".countdownContainer")
-        ) {
-          overlay.style.display = "none";
-        }
-      });
-      
-      document.addEventListener("click", function (e) {
-        setTimeout(() => {
-            const isInsideOverlay = e.target.closest(".countdownOverlay");
-            const isCountdownContainer = e.target.closest(".countdownContainer");
-    
-            if (!isInsideOverlay && !isCountdownContainer) {
-                document.querySelectorAll(".countdownOverlay").forEach(el => el.remove());
-            }
-        }, 0);
-    });
-    
-    
-      
+/* ---------- Admin ---------- */
+async function onAdminButton(){
+  const user = auth.currentUser;
+  if (!user){
+    try { await googleLogin(); }
+    catch { /* ignore */ }
+    return;
+  }
+  const isAdmin = user.uid === ADMIN_UID;
+  if (!isAdmin) return;
+  refs.adminPanel.hidden = !refs.adminPanel.hidden;
+  if (!refs.adminPanel.hidden) $('#fLabel').focus();
+}
 
-    
-});
+async function onAdminSubmit(e){
+  e.preventDefault();
+  const user = auth.currentUser;
+  if (!user || user.uid !== ADMIN_UID) return;
+
+  const data = {
+    label: refs.fLabel.value.trim(),
+    date: refs.fDate.value,
+    time: refs.fTime.value || '00:00',
+    category: refs.fCategory.value || 'Misc',
+    annual: !!refs.fAnnual.checked,
+  };
+  if (!data.label || !data.date) return;
+
+  await saveCountdown(data);
+  refs.adminForm.reset();
+  refs.adminPanel.hidden = true;
+
+  await hydrateCountdowns();
+  render();
+}
+
+/* ---------- Ticker ---------- */
+function startTicker(){
+  if (ticking) clearInterval(ticking);
+  ticking = setInterval(() => {
+    const now = Date.now();
+    if (now - lastTick < 30_000) return; // throttle updates
+    lastTick = now;
+    render();
+  }, 30_000);
+}
+
+/* ---------- Utils ---------- */
+function dedupeByKey(list){
+  const map = new Map();
+  for (const item of list) {
+    map.set(item.key, item);
+  }
+  return Array.from(map.values());
+}
+function loadBoolean(key, def){
+  try{ const v = JSON.parse(localStorage.getItem(key) || 'null'); return typeof v === 'boolean' ? v : def; }catch{ return def; }
+}
