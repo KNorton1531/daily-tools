@@ -4,12 +4,10 @@ function togglePanel(event) {
   const buttonIcon = document.querySelector('.burger-menu span');
 
   panel.classList.toggle('open');
+  const isOpen = panel.classList.contains('open');
+  document.body.classList.toggle('nav-open', isOpen);
 
-  if (panel.classList.contains('open')) {
-    buttonIcon.textContent = 'close';
-  } else {
-    buttonIcon.textContent = 'menu';
-  }
+  buttonIcon.textContent = isOpen ? 'close' : 'menu';
 }
 
 function closePanel(event) {
@@ -18,6 +16,7 @@ function closePanel(event) {
 
   if (panel.classList.contains('open') && !panel.contains(event.target)) {
     panel.classList.remove('open');
+    document.body.classList.remove('nav-open');
     buttonIcon.textContent = 'menu';
   }
 }

@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Christmas Hub</title>
+
+  <!-- Fonts / Icons -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&family=Material+Symbols+Outlined" rel="stylesheet">
+
+  <!-- Existing nav CSS -->
+  <link rel="stylesheet" href="css/nav.css">
+  <!-- Reuse your weather styles for sun times UI bits -->
+  <link rel="stylesheet" href="css/weather.css">
+
+  <style>
+    /* Page layout */
+    :root{
+      --bg:#0e1220;
+      --fg:#eef2ff;
+      --muted:#aab2d6;
+      --card:#151a33;
+      --accent:#e11d48;
+      --accent-2:#10b981;
+      --gold:#ffd166;
+      --blue:#60a5fa;
+    }
+    html,body{height:100%;}
+    body{
+      font-family:Poppins, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      margin:0;
+      color:var(--fg);
+      background:
+        radial-gradient(1200px 600px at 80% -10%, #1b2247 30%, transparent 60%) no-repeat,
+        radial-gradient(900px 500px at -10% 20%, #151a33 20%, transparent 60%) no-repeat,
+        var(--bg);
+    }
+    main{
+      max-width:1200px;
+      margin:0 auto;
+      padding:24px 16px 64px;
+    }
+
+    /* Festive lights border */
+    .lights{
+      position:fixed; inset:0; pointer-events:none; z-index:50;
+      background:
+        radial-gradient(circle at 5% 0%, rgba(255,73,73,.35) 0 6px, transparent 7px) repeat-x 0 0 / 50px 50px,
+        radial-gradient(circle at 15% 0%, rgba(255,223,73,.35) 0 6px, transparent 7px) repeat-x 0 0 / 80px 80px,
+        radial-gradient(circle at 25% 0%, rgba(73,255,132,.35) 0 6px, transparent 7px) repeat-x 0 0 / 110px 110px,
+        linear-gradient(to right, transparent 0 100%) 0 0 / 100% 8px,
+        linear-gradient(to right, transparent 0 100%) 0 calc(100% - 8px) / 100% 8px,
+        linear-gradient(to bottom, transparent 0 100%) 0 0 / 8px 100%,
+        linear-gradient(to bottom, transparent 0 100%) calc(100% - 8px) 0 / 8px 100%;
+      animation: twinkle 2.4s linear infinite;
+    }
+    @keyframes twinkle { 50% { filter:brightness(1.25) contrast(1.05); } }
+
+    /* Snow layer */
+    .snow{ position:fixed; inset:0; pointer-events:none; z-index:30; overflow:hidden; }
+    .snow i{
+      position:absolute; top:-10px; width:6px; height:6px; border-radius:50%;
+      background:rgba(255,255,255,.9); filter:drop-shadow(0 0 6px rgba(255,255,255,.6));
+      animation: fall linear infinite;
+    }
+    @keyframes fall { to { transform: translateY(110vh) translateX(20px); opacity:.9; } }
+
+    /* Section basics */
+    .section{ margin:24px 0; }
+    .section h2{ margin:0 0 12px; font-weight:700; letter-spacing:.3px; }
+    .grid{ display:grid; gap:16px; }
+    .grid.cols-3{ grid-template-columns:repeat(3,minmax(0,1fr)); }
+    .grid.cols-2{ grid-template-columns:repeat(2,minmax(0,1fr)); }
+    @media (max-width:900px){ .grid.cols-3{ grid-template-columns:1fr; } .grid.cols-2{ grid-template-columns:1fr; } }
+
+    /* Cards */
+    .card{
+      background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(0,0,0,.08)), var(--card);
+      border:1px solid rgba(255,255,255,.06);
+      border-radius:16px;
+      padding:16px;
+      box-shadow:0 10px 30px rgba(0,0,0,.25);
+    }
+
+    /* Hero countdown */
+    .hero{
+      display:grid; gap:16px; align-items:center;
+      grid-template-columns:1fr;
+      text-align:center;
+      padding:28px 16px;
+      border:1px solid rgba(255,255,255,.08);
+      background:
+        radial-gradient(800px 300px at 50% -10%, rgba(225,29,72,.25), transparent 60%) no-repeat,
+        radial-gradient(600px 300px at 10% 120%, rgba(16,185,129,.2), transparent 60%) no-repeat,
+        var(--card);
+    }
+    .hero h1{ margin:0; font-size:clamp(1.6rem, 2.8vw, 2.4rem); font-weight:700; }
+    .timer-row{ display:flex; flex-wrap:wrap; gap:12px; justify-content:center; }
+    .pill{
+      min-width:120px;
+      display:flex; flex-direction:column; align-items:center; justify-content:center;
+      border-radius:14px; padding:12px 14px; background:#0f1430; border:1px solid rgba(255,255,255,.06);
+    }
+    .pill .num{ font-size:clamp(1.8rem,4.8vw,2.6rem); font-weight:700; line-height:1; }
+    .pill .lab{ font-size:.9rem; color:var(--muted); }
+
+    /* Secondary countdown tiles */
+    .tile{ display:grid; gap:6px; align-content:center; justify-items:center; padding:16px; }
+    .tile .when{ color:var(--muted); font-size:.9rem; }
+    .tile .big{ font-size:1.6rem; font-weight:700; }
+
+    /* Santa tracker */
+    .santa{ display:flex; align-items:center; gap:16px; }
+    .santa .status{ font-weight:700; }
+    .santa .dot{ width:10px; height:10px; border-radius:50%; background:var(--gold); box-shadow:0 0 10px var(--gold); }
+    .santa .route{ color:var(--muted); font-size:.9rem; }
+    .santa-links{ display:flex; gap:8px; flex-wrap:wrap;}
+    .santa-links .chip{
+        color: #eef2ff;
+        display: flex;
+        gap: 0.5rem;
+        align-items: center;
+        text-decoration: none;
+    }
+
+    /* Playlist card */
+    .playlist-locked{
+      position:relative; overflow:hidden;
+      display:grid; justify-items:center; align-content:center; min-height:220px;
+      background:
+        repeating-linear-gradient(45deg, rgba(255,255,255,.04) 0 10px, rgba(255,255,255,.07) 10px 20px),
+        #121630;
+      border:1px dashed rgba(255,255,255,.15);
+    }
+    .lock-msg{ display:flex; gap:8px; align-items:center; font-weight:600; }
+    .lock-msg .material-symbols-outlined{ font-variation-settings: 'FILL' 1; color:var(--gold); }
+
+    .media-top { position: relative; z-index: 60; }
+
+    /* Sun card contrast fixes */
+    .sun-card { color: #eef2ff; }
+    .sun-card .label { color: #cfd3ff; }
+    .sun-card .value { color: #ffffff; }
+
+    /* Today rows */
+    .sun-card .timeContainer { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .sun-card .time { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border: 1px solid rgba(255,255,255,.08); border-radius: 10px; background: rgba(255,255,255,.04); }
+    .sun-card .time .material-symbols-outlined { opacity: .9; }
+
+    /* Week layout (no overflow) */
+    .sun-card #sunWeek { margin-top: 10px; }
+    .sun-card #sunWeek .forecast {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+    gap: 8px;
+    }
+    .sun-card #sunWeek .sunsetContainer {
+    padding: 8px 10px;
+    border: 1px solid rgba(255,255,255,.08);
+    border-radius: 10px;
+    background: rgba(255,255,255,.04);
+    min-width: 0;           /* allow shrinking */
+    }
+    .sun-card #sunWeek .day { font-weight: 600; color: #e8ebff; }
+    .sun-card #sunWeek .temp { color: #c8ceff; white-space: nowrap; }
+
+
+    /* Compact, structured grid for December plans */
+    ol.plans{
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    counter-reset: plan;
+    display: grid;
+    gap: 10px;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    }
+
+    ol.plans > li{
+    counter-increment: plan;
+    display: grid;
+    grid-template-columns: auto 1fr;     /* number badge + text */
+    grid-template-rows: auto auto;       /* title line + date line */
+    align-items: start;
+    gap: 6px 12px;
+    padding: 10px 12px;
+    border-radius: 12px;
+    border: 1px solid rgba(255,255,255,.08);
+    background: linear-gradient(180deg, rgba(255,255,255,.04), rgba(0,0,0,.06)), var(--card);
+    min-width: 0;
+    }
+
+    /* Number badge */
+    ol.plans > li::before{
+    content: counter(plan);
+    display: grid;
+    place-items: center;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 999px;
+    font-weight: 700;
+    color: #fff;
+    background: var(--accent);
+    box-shadow: 0 6px 16px rgba(225,29,72,.25);
+    }
+
+    /* Item text */
+    ol.plans > li { color: var(--fg); }
+
+    /* Date line from data-date attribute */
+    ol.plans > li::after{
+        content: attr(data-date-pretty);
+        grid-column: 1 / -1;
+        color: var(--muted);
+        font-size: .9rem;
+        line-height: 1.2;
+        margin-left: calc(2rem + 12px);
+    }
+
+
+    /* Optional: tighter on small screens */
+    @media (max-width: 480px){
+    ol.plans{
+        grid-template-columns: 1fr;
+    }
+    }
+
+    .embed{ aspect-ratio:16/9; width:100%; border:0; border-radius:12px; }
+
+    /* Simple utility */
+    /* Row: natural heights, sun card is double width */
+    .row{
+    display:flex;
+    gap:16px;
+    align-items:flex-start;
+    }
+
+    .row > .card{ flex:1 1 0; }
+    .row > .sun-card{ flex:2 1 0; }
+
+    /* If your HTML has inline flex:1, enforce with !important */
+    .row > .card{ flex:1 1 0 !important; }
+    .row > .sun-card{ flex:2 1 0 !important; }
+
+    @media (max-width:900px){
+    .row{ flex-direction:column; }
+    .row > .card,
+    .row > .sun-card{ flex:1 1 auto !important; }
+    }
+
+
+  </style>
+</head>
+<body>
+
+  <!-- Existing NAV BAR (unchanged) -->
+  <div id="sidePanel" class="side-panel">
+    <button class="burger-menu" onclick="togglePanel(event)">
+      <span style="color:#fff;" class="material-symbols-outlined">menu</span>
+    </button>
+    <p class="navHeader">KN | Daily Tools</p>
+    <div class="menuContent">
+      <div class="menuGroup">
+        <a href="index.html">
+          <span class="material-symbols-outlined">cloud</span>
+          <p>Weather</p>
+          <div class="completeStatus"></div>
+        </a>
+        <a href="countdowns.html">
+          <span class="material-symbols-outlined">schedule</span>
+          <p>Countdowns</p>
+          <div class="completeStatus"></div>
+        </a>
+        <a href="bookmarks.html">
+          <span class="material-symbols-outlined">bookmark</span>
+          <p>Bookmarks</p>
+          <div class="completeStatus"></div>
+        </a>
+        <a>
+          <span class="material-symbols-outlined">headphones</span>
+          <p>Lo-Fi Player</p>
+          <div class="notStartedStatus"></div>
+        </a>
+        <a>
+          <span class="material-symbols-outlined">calculate</span>
+          <p>Calculators</p>
+          <div class="notStartedStatus"></div>
+        </a>
+        <a>
+          <span class="material-symbols-outlined">flight</span>
+          <p>Flight Tracking</p>
+          <div class="notStartedStatus"></div>
+        </a>
+        <a href="cams.html">
+          <span class="material-symbols-outlined">videocam</span>
+          <p>Live Cams</p>
+          <div class="inProgressStatus"></div>
+        </a>
+        <a href="christmas.html">
+          <span class="material-symbols-outlined">featured_seasonal_and_gifts</span>
+          <p>Christmas</p>
+          <div class="completeStatus"></div>
+        </a>
+
+        <div class="keyContainer">
+          <p class="keyTitle">Key</p>
+          <div class="keyItem">
+            <div class="completeStatus"></div>
+            <p>Complete</p>
+          </div>
+          <div class="keyItem">
+            <div class="inProgressStatus"></div>
+            <p>In Progress</p>
+          </div>
+          <div class="keyItem">
+            <div class="notStartedStatus"></div>
+            <p>Planned</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div id="navScrim" class="nav-scrim" onclick="closePanel(event)"></div>
+
+  <!-- Decorative layers -->
+  <div class="lights" aria-hidden="true"></div>
+  <div class="snow" aria-hidden="true" id="snowLayer"></div>
+
+  <main>
+    <!-- Hero: Countdown to Christmas Day -->
+    <section class="section hero card" id="heroCountdown">
+      <h1>The Countdown to Christmas</h1>
+      <div class="timer-row">
+        <div class="pill"><div class="num" id="cXmasDays">—</div><div class="lab">Days</div></div>
+        <div class="pill"><div class="num" id="cXmasHours">—</div><div class="lab">Hours</div></div>
+        <div class="pill"><div class="num" id="cXmasMinutes">—</div><div class="lab">Minutes</div></div>
+      </div>
+      <div class="when" id="cXmasDate"></div>
+    </section>
+
+    <!-- Secondary countdowns -->
+    <section class="section">
+      <h2>Upcoming Dates</h2>
+      <div class="grid cols-3">
+        <div class="card tile" data-countdown="christmas-eve">
+          <div class="when">Christmas Eve</div>
+          <div class="big" id="cEve">—</div>
+          <div class="when" id="cEveDate"></div>
+        </div>
+        <div class="card tile" data-countdown="dec-1">
+          <div class="when">December 1st</div>
+          <div class="big" id="cDec1">—</div>
+          <div class="when" id="cDec1Date"></div>
+        </div>
+        <div class="card tile" data-countdown="austria">
+          <div class="when">Austria Holiday (Leave 06:00)</div>
+          <div class="big" id="cAustria">—</div>
+          <div class="when" id="cAustriaDate"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Santa tracker + Playlist + Sun times -->
+    <section class="section">
+      <div class="row">
+        <div class="card" style="flex:1; min-width:260px;">
+          <h2 style="margin-top:0;">Santa Tracker</h2>
+          <div class="santa">
+            <nav class="santa-links" aria-label="Santa trackers">
+            <a class="chip" href="https://www.noradsanta.org/en/" target="_blank" rel="noopener">
+                <span class="material-symbols-outlined" aria-hidden="true">radar</span>
+                NORAD Tracker
+            </a>
+            <a class="chip" href="https://santatracker.google.com/" target="_blank" rel="noopener">
+                <span class="material-symbols-outlined" aria-hidden="true">public</span>
+                Google Tracker
+            </a>
+            </nav>
+
+            <span class="dot" id="santaDot" aria-hidden="true"></span>
+            <div>
+              <div class="status" id="santaStatus">—</div>
+              <div class="route" id="santaRoute">North Pole → Worldwide</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card" style="flex:1; min-width:260px;">
+          <h2 style="margin-top:0;">Festive Playlist</h2>
+          <div id="playlistArea" class="playlist-locked">
+            <div class="lock-msg">
+              <span class="material-symbols-outlined">lock</span>
+              <span>Available from Dec 1 to Jan 1</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="card sun-card" style="flex:1; min-width:280px;">
+          <h2 style="margin-top:0;">Today’s Sun</h2>
+          <div class="timeContainer">
+            <div class="time">
+              <span class="material-symbols-outlined">wb_sunny</span>
+              <div>
+                <div class="label">Sunrise</div>
+                <div class="value" id="sunriseVal">—</div>
+              </div>
+            </div>
+            <div class="time">
+              <span class="material-symbols-outlined">dark_mode</span>
+              <div>
+                <div class="label">Sunset</div>
+                <div class="value" id="sunsetVal">—</div>
+              </div>
+            </div>
+          </div>
+          <div class="sunsetContainer" id="sunWeek" aria-label="This week’s sunrise and sunset"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Plans list -->
+    <section class="section card">
+      <h2 style="margin-top:0;">Plans from Dec 1 → Dec 25</h2>
+      <ol class="plans" id="plansList">
+        <li data-date="2025-12-01">Decorations up, lights test.</li>
+        <li data-date="2025-12-02">Write first batch of cards.</li>
+        <li data-date="2025-12-03">Bake cookies trial run.</li>
+        <li data-date="2025-12-04">Gift brainstorming session.</li>
+        <li data-date="2025-12-05">Local market evening walk.</li>
+        <li data-date="2025-12-06">Wrap early gifts.</li>
+        <li data-date="2025-12-07">Movie night: Home Alone.</li>
+        <li data-date="2025-12-08">Order remaining gifts.</li>
+        <li data-date="2025-12-09">House tidy + music playlist.</li>
+        <li data-date="2025-12-10">Mulled drink test.</li>
+        <li data-date="2025-12-11">Check Austria packing list.</li>
+        <li data-date="2025-12-12">Charge cameras / devices.</li>
+        <li data-date="2025-12-13">Early night prep for travel.</li>
+        <li data-date="2025-12-14">Finalise tickets & documents.</li>
+        <li data-date="2025-12-15">Austria travel day (leave 06:00).</li>
+        <li data-date="2025-12-16">Christmas market day.</li>
+        <li data-date="2025-12-17">Day trip / photos.</li>
+        <li data-date="2025-12-18">Rest + postcards.</li>
+        <li data-date="2025-12-19">Gift shopping abroad.</li>
+        <li data-date="2025-12-20">Return + unpack.</li>
+        <li data-date="2025-12-21">Bake cookies round two.</li>
+        <li data-date="2025-12-22">Wrap all remaining gifts.</li>
+        <li data-date="2025-12-23">Prep food shopping list.</li>
+        <li data-date="2025-12-24">Christmas Eve traditions.</li>
+        <li data-date="2025-12-25">Christmas Day.</li>
+      </ol>
+    </section>
+
+    <!-- Livestream -->
+    <section class="section card media-top">
+    <h2 style="margin-top:0;">Live Stream</h2>
+    <iframe
+        class="embed"
+        src="https://www.youtube.com/embed/Cp4RRAEgpeU"
+        title="YouTube livestream"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+        referrerpolicy="strict-origin-when-cross-origin"
+        allowfullscreen></iframe>
+    </section>
+
+  <!-- Existing nav JS -->
+  <script src="scripts/nav.js"></script>
+
+  <script>
+    // --- Utilities ---
+    function getNextOccurrenceForMonthDay(month, day, hour=0, minute=0){
+      const now = new Date();
+      const year = now.getFullYear();
+      const targetThisYear = new Date(year, month-1, day, hour, minute, 0);
+      return (targetThisYear > now) ? targetThisYear : new Date(year+1, month-1, day, hour, minute, 0);
+    }
+    function formatCountdownParts(diffMs){
+      const totalMinutes = Math.max(0, Math.floor(diffMs / 60000));
+      const days = Math.floor(totalMinutes / (60*24));
+      const hours = Math.floor((totalMinutes - days*24*60) / 60);
+      const minutes = totalMinutes - days*24*60 - hours*60;
+      return {days, hours, minutes};
+    }
+    function setText(id, val){ const el = document.getElementById(id); if(el) el.textContent = val; }
+
+    // --- Hero: Christmas Day countdown ---
+    function updateHeroCountdown(){
+      const target = getNextOccurrenceForMonthDay(12, 25, 0, 0);
+      const diff = target - new Date();
+      const {days, hours, minutes} = formatCountdownParts(diff);
+      setText('cXmasDays', days);
+      setText('cXmasHours', hours);
+      setText('cXmasMinutes', minutes);
+      setText('cXmasDate', target.toLocaleString([], {weekday:'long', year:'numeric', month:'long', day:'numeric'}));
+    }
+
+    // --- Secondary countdowns ---
+    function updateSecondaryCountdowns(){
+      const eve = getNextOccurrenceForMonthDay(12, 24, 0, 0);
+      const dec1 = getNextOccurrenceForMonthDay(12, 1, 0, 0);
+      const austria = getNextOccurrenceForMonthDay(12, 15, 6, 0);
+
+      const e = formatCountdownParts(eve - new Date());
+      const d = formatCountdownParts(dec1 - new Date());
+      const a = formatCountdownParts(austria - new Date());
+
+      setText('cEve', `${e.days}d ${e.hours}h ${e.minutes}m`);
+      setText('cEveDate', eve.toLocaleString([], {weekday:'long', month:'long', day:'numeric'}));
+
+      setText('cDec1', `${d.days}d ${d.hours}h ${d.minutes}m`);
+      setText('cDec1Date', dec1.toLocaleString([], {weekday:'long', month:'long', day:'numeric'}));
+
+      setText('cAustria', `${a.days}d ${a.hours}h ${a.minutes}m`);
+      setText('cAustriaDate', austria.toLocaleString([], {weekday:'long', month:'long', day:'numeric', hour:'2-digit', minute:'2-digit'}));
+    }
+
+    // --- Santa tracker (simple state machine) ---
+    function updateSantaTracker(){
+      const now = new Date();
+      const y = now.getFullYear();
+      const dec24Start = new Date(y, 11, 24, 0, 0, 0);
+      const dec25End   = new Date(y, 11, 25, 23, 59, 59);
+
+      const dot = document.getElementById('santaDot');
+
+      if(now < dec24Start){
+        const untilTakeoff = formatCountdownParts(dec24Start - now);
+        setText('santaStatus', `Takes off in ${untilTakeoff.days}d ${untilTakeoff.hours}h ${untilTakeoff.minutes}m`);
+        if(dot) dot.style.background = 'var(--gold)';
+      } else if (now >= dec24Start && now <= dec25End){
+        setText('santaStatus', 'In flight – delivering worldwide');
+        if(dot) dot.style.background = 'var(--accent-2)';
+      } else {
+        setText('santaStatus', 'Delivered – back at the North Pole');
+        if(dot) dot.style.background = 'var(--blue)';
+      }
+    }
+
+    // --- Playlist availability (Dec 1 → Jan 1) ---
+    function mountPlaylist(){
+      const area = document.getElementById('playlistArea');
+      if(!area) return;
+
+      const now = new Date();
+      const y = now.getFullYear();
+      const windowStart = new Date(y, 11, 1, 0, 0, 0);  // Dec 1
+      const windowEnd   = new Date(y+1, 0, 1, 0, 0, 0); // Jan 1
+
+      if(now >= windowStart && now < windowEnd){
+        const iframe = document.createElement('iframe');
+        iframe.className = 'embed';
+        // Replace with your playlist if desired
+        iframe.src = 'https://www.youtube.com/embed/videoseries?list=PLWbI6-D5YJ5QyQkJmJwExample';
+        iframe.title = 'Festive Playlist';
+        iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share';
+        iframe.allowFullscreen = true;
+        iframe.referrerPolicy = 'strict-origin-when-cross-origin';
+        area.replaceChildren(iframe);
+      } else {
+        // Keep fun lock state
+        const daysUntil = Math.max(0, Math.ceil((windowStart - now)/86400000));
+        area.querySelector('.lock-msg')?.querySelector('span:last-child')?.replaceWith(
+          document.createTextNode(daysUntil ? `Available in ${daysUntil} day${daysUntil===1?'':'s'}` : 'Available from Dec 1 to Jan 1')
+        );
+      }
+    }
+
+    // --- Sun times via Geolocation + sunrise-sunset.org ---
+    async function fetchSunTimesForDate(lat, lng, dateStr){
+      const url = `https://api.sunrise-sunset.org/json?lat=${lat}&lng=${lng}&date=${dateStr}&formatted=0`;
+      const res = await fetch(url);
+      if(!res.ok) throw new Error('sun api');
+      const json = await res.json();
+      return json.status === 'OK' ? json.results : null;
+    }
+    function toLocalTimeStr(iso){
+      const d = new Date(iso);
+      return d.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+    }
+    async function updateSunTimes(){
+      const sr = document.getElementById('sunriseVal');
+      const ss = document.getElementById('sunsetVal');
+      const weekWrap = document.getElementById('sunWeek');
+      if(!sr || !ss || !weekWrap) return;
+
+      try{
+        const pos = await new Promise((res, rej)=>{
+          if(!navigator.geolocation) return rej(new Error('no geo'));
+          navigator.geolocation.getCurrentPosition(res, rej, { enableHighAccuracy:true, timeout:10000 });
+        });
+        const lat = pos.coords.latitude;
+        const lng = pos.coords.longitude;
+
+        const today = new Date();
+        const todayISO = today.toISOString().slice(0,10);
+        const todayData = await fetchSunTimesForDate(lat, lng, todayISO);
+        if(todayData){
+          sr.textContent = toLocalTimeStr(todayData.sunrise);
+          ss.textContent = toLocalTimeStr(todayData.sunset);
+        }
+
+        weekWrap.textContent = '';
+        const list = document.createElement('div');
+        list.className = 'forecast';
+        for(let i=0;i<7;i++){
+          const d = new Date(today); d.setDate(today.getDate()+i);
+          const dISO = d.toISOString().slice(0,10);
+          /* eslint-disable no-await-in-loop */
+          const data = await fetchSunTimesForDate(lat, lng, dISO);
+          /* eslint-enable no-await-in-loop */
+          const cell = document.createElement('div');
+          cell.className = 'sunsetContainer';
+          const dayName = d.toLocaleDateString([], {weekday:'short'});
+          cell.innerHTML = `
+            <div class="day">${dayName} ${d.getDate()}</div>
+            <div class="temp">↑ ${data ? toLocalTimeStr(data.sunrise) : '—'}</div>
+            <div class="temp">↓ ${data ? toLocalTimeStr(data.sunset) : '—'}</div>
+          `;
+          list.appendChild(cell);
+        }
+        weekWrap.appendChild(list);
+      }catch(e){
+        sr.textContent = '—';
+        ss.textContent = '—';
+        weekWrap.textContent = 'Location not available.';
+      }
+    }
+
+    // --- Snow generator ---
+    function mountSnowflakes(){
+      const layer = document.getElementById('snowLayer');
+      if(!layer) return;
+      const count = Math.min(120, Math.floor(window.innerWidth/8));
+      for(let i=0;i<count;i++){
+        const flake = document.createElement('i');
+        const size = 2 + Math.random()*4;
+        flake.style.width = size+'px';
+        flake.style.height = size+'px';
+        flake.style.left = Math.random()*100 + 'vw';
+        flake.style.animationDuration = (6 + Math.random()*10) + 's';
+        flake.style.animationDelay = (Math.random()*6) + 's';
+        layer.appendChild(flake);
+      }
+    }
+
+    function parseLocalIsoDateStringToDate(localIso /* e.g., 2025-12-01 */) {
+  const [y, m, d] = localIso.split('-').map(Number);
+  return new Date(y, m - 1, d);
+}
+
+    // Get ordinal suffix (1st, 2nd, 3rd, 4th, ...)
+    function getEnglishOrdinalSuffix(dayNumber) {
+    const j = dayNumber % 10, k = dayNumber % 100;
+    if (k >= 11 && k <= 13) return 'th';
+    if (j === 1) return 'st';
+    if (j === 2) return 'nd';
+    if (j === 3) return 'rd';
+    return 'th';
+    }
+
+    // Format like "Mon 1st Dec" (no year)
+    function formatDateAsShortWeekdayOrdinalMonth(dateObj) {
+    const weekday = dateObj.toLocaleDateString(undefined, { weekday: 'short' }); // e.g., Mon
+    const month   = dateObj.toLocaleDateString(undefined, { month: 'short' });   // e.g., Dec
+    const day     = dateObj.getDate();
+    const ordinal = getEnglishOrdinalSuffix(day);
+    return `${weekday} ${day}${ordinal} ${month}`;
+    }
+
+    // Apply to the December plans list
+    function formatPlansListDatesToPrettyShort() {
+    const list = document.getElementById('plansList');
+    if (!list) return;
+    list.querySelectorAll('li[data-date]').forEach((li) => {
+        const iso = li.getAttribute('data-date');
+        if (!iso) return;
+        const date = parseLocalIsoDateStringToDate(iso);
+        const pretty = formatDateAsShortWeekdayOrdinalMonth(date);
+        li.setAttribute('data-date-pretty', pretty);
+    });
+    }
+
+    document.addEventListener('DOMContentLoaded', formatPlansListDatesToPrettyShort);
+
+    // --- Tick loops ---
+    function startTimers(){
+      updateHeroCountdown();
+      updateSecondaryCountdowns();
+      updateSantaTracker();
+      mountPlaylist();
+      // 1-minute updates are fine here
+      setInterval(()=>{
+        updateHeroCountdown();
+        updateSecondaryCountdowns();
+        updateSantaTracker();
+        mountPlaylist();
+      }, 60*1000);
+    }
+
+    // Init
+    document.addEventListener('DOMContentLoaded', ()=>{
+      mountSnowflakes();
+      startTimers();
+      updateSunTimes();
+    });
+  </script>
+</body>
+</html>
