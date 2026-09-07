@@ -255,6 +255,9 @@ code.g{ color:var(--sa-gold); }
    ============================================================ */
 
 const BLOCK_SIG = [0x42, 0x4C, 0x4F, 0x43, 0x4B]; // "BLOCK"
+const SA_BLOCK_COUNT = 28;   // PC original writes exactly 28 blocks
+const STAT_FLOAT_COUNT = 82; // stats block: dwords 0..81 are floats, 82+ are ints
+const STAT_COMPLETION = 46;  // float index holding overall completion %
 
 /** Canonical-ish block order for the PC original save. Names are labels only —
  *  nothing below depends on a block being at a specific index. */
@@ -276,9 +279,14 @@ class SaveFile {
     this.blocks = this._scanBlocks();
     this.checksum = this._checksum();
     this.script = this._parseScriptBlock();
+    this.playerInfo = this._findPlayerInfo();
+    this.stats = this._findStats();
   }
 
-  /* --- locate every "BLOCK" marker; payload runs to the next marker --- */
+  /* --- locate every "BLOCK" marker; payload runs to the next marker.
+         Only the first SA_BLOCK_COUNT are real: a save is a fixed-size file,
+         so anything past the 28th block is stale data left over from an
+         earlier, longer save state (and carries its own stray markers). --- */
   _scanBlocks() {
     const b = this.bytes, out = [], starts = [];
     const limit = b.length - BLOCK_SIG.length;
@@ -288,16 +296,22 @@ class SaveFile {
       for (let k = 1; k < BLOCK_SIG.length; k++) if (b[i + k] !== BLOCK_SIG[k]) { hit = false; break; }
       if (hit) starts.push(i);
     }
-    const tail = Math.max(0, b.length - 4); // trailing checksum
-    for (let i = 0; i < starts.length; i++) {
-      const dataStart = starts[i] + BLOCK_SIG.length;
-      const dataEnd = (i + 1 < starts.length) ? starts[i + 1] : tail;
+    this.markerCount = starts.length;
+
+    const used = starts.slice(0, SA_BLOCK_COUNT);
+    // Real data ends where the first stale marker begins (or at the checksum).
+    this.dataEnd = (starts.length > SA_BLOCK_COUNT) ? starts[SA_BLOCK_COUNT] : Math.max(0, b.length - 4);
+    this.staleTailBytes = Math.max(0, b.length - 4 - this.dataEnd);
+
+    for (let i = 0; i < used.length; i++) {
+      const dataStart = used[i] + BLOCK_SIG.length;
+      const dataEnd = (i + 1 < used.length) ? used[i + 1] : this.dataEnd;
       out.push({
         index: i,
         name: BLOCK_NAMES[i] || ("Block " + i),
-        markerOffset: starts[i],
+        markerOffset: used[i],
         dataStart,
-        size: Math.max(0, dataEnd - dataStart)
+        size: Math.max(0, dataEnd - dataStart)   // 0 is legal: empty blocks exist
       });
     }
     return out;
@@ -315,33 +329,115 @@ class SaveFile {
   validate() {
     const errs = [], warns = [];
     if (this.bytes.length < 60000) errs.push("File is far too small to be a San Andreas save (" + this.bytes.length + " bytes).");
-    if (this.blocks.length < 15) errs.push("Only " + this.blocks.length + " BLOCK markers found — this does not look like a PC original SA save.");
+    if (this.blocks.length < SA_BLOCK_COUNT) errs.push("Only " + this.blocks.length + " BLOCK markers found (expected " + SA_BLOCK_COUNT + ") — this does not look like a PC original SA save.");
     if (this.blocks.length && this.blocks[0].markerOffset !== 0) warns.push("First BLOCK marker is at offset " + this.blocks[0].markerOffset + ", not 0 — file may be a mobile/remastered variant.");
-    if (this.bytes.length < 195000 || this.bytes.length > 215000) warns.push("Unusual file size (" + this.bytes.length.toLocaleString() + " B). PC originals are normally ~202,752 B.");
-    if (this.checksum && this.checksum.computed !== this.checksum.stored) warns.push("Trailing checksum does not match a plain byte-sum — the save may have been edited, or this build uses a different checksum.");
-    if (!this.script) errs.push('Could not locate the "SCR" script block — mission data is unreadable.');
+    if (this.bytes.length < 195000 || this.bytes.length > 215000) warns.push("Unusual file size (" + this.bytes.length.toLocaleString() + " B). PC originals are normally 202,752 B.");
+    if (this.checksum && this.checksum.computed !== this.checksum.stored) warns.push("Trailing checksum does not match the byte-sum of the file — the save may have been edited.");
+    if (!this.script) errs.push("Could not identify the script block (no block opens with a plausible variable-space size) — mission data is unreadable.");
+    else if (this.scriptMatches > 1) warns.push(this.scriptMatches + " blocks matched the script-block signature; used block " + this.script.block.index + ".");
+    if (!this.playerInfo) warns.push("PlayerInfo block not identified — money is unavailable.");
+    if (!this.stats) warns.push("Stats block not identified — completion % and counters are unavailable.");
     return { ok: errs.length === 0, errs, warns };
   }
 
-  /* --- block 1: SCR tag, then the global variable space --- */
-  _parseScriptBlock() {
-    for (const blk of this.blocks.slice(0, 4)) {
-      const o = blk.dataStart;
-      if (o + 12 > this.bytes.length) continue;
-      if (this.bytes[o] !== 0x53 || this.bytes[o + 1] !== 0x43 || this.bytes[o + 2] !== 0x52) continue; // "SCR"
-
-      // Try the documented layout first, then a tolerant fallback.
-      const candidates = [
-        { start: o + 12, size: this.dv.getUint32(o + 8, true) },
-        { start: o + 8,  size: this.dv.getUint32(o + 4, true) }
-      ];
-      for (const c of candidates) {
-        const fits = c.size > 512 && c.size < 400000 && (c.start + c.size) <= this.bytes.length;
-        if (!fits) continue;
-        return { block: blk, globalsStart: c.start, varSpaceSize: c.size, count: Math.floor(c.size / 4) };
-      }
+  /** Find every occurrence of a byte signature in the file. */
+  _findSig(sig, limitHits) {
+    const b = this.bytes, hits = [], end = b.length - sig.length;
+    for (let i = 0; i <= end; i++) {
+      if (b[i] !== sig[0]) continue;
+      let ok = true;
+      for (let k = 1; k < sig.length; k++) if (b[i + k] !== sig[k]) { ok = false; break; }
+      if (ok) { hits.push(i); if (limitHits && hits.length >= limitHits) break; }
     }
+    return hits;
+  }
+
+  blockAt(offset) {
+    for (const b of this.blocks) if (offset >= b.dataStart && offset < b.dataStart + b.size) return b;
     return null;
+  }
+
+  /* --- script block ---
+     San Andreas has NO "SCR" tag (that is a GTA III / Vice City convention).
+     The script block simply opens with a u32 giving the size of the global
+     variable space, and the globals follow immediately at +4. Identified by
+     that signature rather than by block index, so a stray "BLOCK" byte
+     sequence in an earlier payload cannot mislocate it. */
+  _parseScriptBlock() {
+    const matches = [];
+    for (const blk of this.blocks) {
+      if (blk.size < 0x8000) continue;
+      const vs = this.dv.getUint32(blk.dataStart, true);
+      if (vs <= 0x8000 || vs >= blk.size) continue;
+      if (blk.dataStart + 4 + vs > this.bytes.length) continue;
+      matches.push({
+        block: blk, globalsStart: blk.dataStart + 4,
+        varSpaceSize: vs, count: Math.floor(vs / 4)
+      });
+    }
+    this.scriptMatches = matches.length;
+    return matches.length ? matches[0] : null;
+  }
+
+  /* --- PlayerInfo: a small block whose Money (+4) is mirrored by
+         MoneyOnScreen (+16). Note the two are 12 bytes apart, not adjacent. --- */
+  _findPlayerInfo() {
+    const hits = [];
+    for (const blk of this.blocks) {
+      if (blk.size < 24 || blk.size > 128) continue;
+      const money = this.dv.getInt32(blk.dataStart + 4, true);
+      const onScreen = this.dv.getInt32(blk.dataStart + 16, true);
+      if (money !== onScreen || money < 0 || money > 900000000) continue;
+      hits.push({ block: blk, money, offset: blk.dataStart + 4 });
+    }
+    if (!hits.length) return null;
+    const preferred = hits.find(h => h.block.index === 15);
+    return preferred || hits[0];
+  }
+
+  /* --- Stats: the block immediately after PlayerInfo. Leading dwords are
+         floats (weapon skills, completion %), the tail is int counters. --- */
+  _findStats() {
+    if (!this.playerInfo) return null;
+    const blk = this.blocks[this.playerInfo.block.index + 1];
+    if (!blk || blk.size < 400) return null;
+    return { block: blk, count: Math.floor(blk.size / 4) };
+  }
+
+  statFloat(i) {
+    if (!this.stats || i < 0 || i >= this.stats.count) return null;
+    return this.dv.getFloat32(this.stats.block.dataStart + i * 4, true);
+  }
+  statInt(i) {
+    if (!this.stats || i < 0 || i >= this.stats.count) return null;
+    return this.dv.getInt32(this.stats.block.dataStart + i * 4, true);
+  }
+
+  /** Human-readable dump used when parsing fails, so the cause is visible. */
+  diagnostics() {
+    const hex = o => {
+      const parts = [];
+      for (let i = 0; i < 12 && o + i < this.bytes.length; i++) parts.push(this.bytes[o + i].toString(16).padStart(2, "0"));
+      return parts.join(" ");
+    };
+    const ascii = o => {
+      let s = "";
+      for (let i = 0; i < 12 && o + i < this.bytes.length; i++) {
+        const c = this.bytes[o + i];
+        s += (c >= 0x20 && c <= 0x7e) ? String.fromCharCode(c) : ".";
+      }
+      return s;
+    };
+    const lines = [];
+    lines.push("size=" + this.bytes.length + " B, blocks=" + this.blocks.length +
+      ", BLOCK markers=" + this.markerCount + ", stale tail=" + this.staleTailBytes + " B");
+    lines.push("script=" + (this.script ? "block " + this.script.block.index + ", " + this.script.count + " globals @0x" + this.script.globalsStart.toString(16) : "NOT FOUND") +
+      "  playerInfo=" + (this.playerInfo ? "block " + this.playerInfo.block.index : "NOT FOUND") +
+      "  stats=" + (this.stats ? "block " + this.stats.block.index : "NOT FOUND"));
+    for (const b of this.blocks.slice(0, 6))
+      lines.push("block " + b.index + " data@0x" + b.dataStart.toString(16) +
+        " size=" + b.size + "  " + hex(b.dataStart) + "  |" + ascii(b.dataStart) + "|");
+    return lines;
   }
 
   gInt(i)   { const p = this.script.globalsStart + i * 4; return (p + 4 <= this.bytes.length) ? this.dv.getInt32(p, true)   : null; }
@@ -356,64 +452,32 @@ class SaveFile {
    ============================================================ */
 
 const Extract = {
-  /** SimpleVars opens with the save title as a UTF-16LE string. */
+  /** SimpleVars: u32, then the last-passed mission name as a NUL-terminated
+   *  ASCII string. (This is what the in-game load menu shows as the slot name.) */
   saveName(sf) {
     if (!sf.blocks.length) return null;
-    const start = sf.blocks[0].dataStart;
+    const start = sf.blocks[0].dataStart + 4;
     let s = "";
-    for (let i = 0; i < 60; i++) {
-      const p = start + i * 2;
-      if (p + 2 > sf.bytes.length) break;
-      const cu = sf.dv.getUint16(p, true);
-      if (cu === 0) break;
-      if (cu < 0x20 || cu > 0x7e) { s = ""; break; }
-      s += String.fromCharCode(cu);
+    for (let i = 0; i < 64; i++) {
+      const c = sf.bytes[start + i];
+      if (c === 0) break;
+      if (c < 0x20 || c > 0x7e) { s = ""; break; }
+      s += String.fromCharCode(c);
     }
     return s.trim().length >= 2 ? { value: s.trim(), confidence: "high" } : null;
   },
 
-  /** PlayerInfo stores Money and MoneyOnScreen as adjacent, usually equal dwords. */
+  /** Money, read directly from the located PlayerInfo block. */
   money(sf) {
-    const cands = [];
-    const search = sf.blocks.slice(10, 22);
-    for (const blk of search) {
-      const end = Math.min(blk.dataStart + blk.size - 8, sf.bytes.length - 8);
-      for (let p = blk.dataStart; p < end; p += 4) {
-        const a = sf.dv.getInt32(p, true);
-        if (a <= 0 || a > 900000000) continue;
-        if (sf.dv.getInt32(p + 4, true) !== a) continue;
-        if (p >= 4 && sf.dv.getInt32(p - 4, true) === a) continue; // skip long runs
-        cands.push({ value: a, offset: p, block: blk.name });
-      }
-    }
-    if (!cands.length) return null;
-    cands.sort((x, y) => y.value - x.value);
-    return { value: cands[0].value, confidence: cands.length === 1 ? "medium" : "low", candidates: cands.slice(0, 12) };
+    if (!sf.playerInfo) return null;
+    return { value: sf.playerInfo.money, offset: sf.playerInfo.offset, confidence: "high" };
   },
 
-  /** Completion = progressMade / totalProgress, stored as an adjacent float pair. */
+  /** Overall completion %, read from the stats block float array. */
   progress(sf) {
-    // Block payloads start at (marker + 5), so dword alignment is block-relative,
-    // not file-relative — walk each block from its own dataStart.
-    const cands = [];
-    for (const blk of sf.blocks) {
-      const end = Math.min(blk.dataStart + blk.size - 8, sf.bytes.length - 8);
-      for (let p = blk.dataStart; p < end; p += 4) {
-        const total = sf.dv.getFloat32(p + 4, true);
-        if (!(total >= 150 && total <= 320)) continue;
-        if (Math.abs(total - Math.round(total)) > 0.001) continue;
-        const made = sf.dv.getFloat32(p, true);
-        if (!(made >= 0 && made <= total)) continue;
-        if (Math.abs(made - Math.round(made)) > 0.001) continue;
-        cands.push({ made, total, pct: (made / total) * 100, offset: p, block: blk.name });
-      }
-    }
-    if (!cands.length) return null;
-    // Prefer the largest denominator — the master "total progress" counter.
-    cands.sort((a, b) => b.total - a.total || b.made - a.made);
-    const best = cands[0];
-    return { value: best.pct, made: best.made, total: best.total, offset: best.offset,
-             confidence: cands.length <= 3 ? "medium" : "low", candidates: cands.slice(0, 12) };
+    const v = sf.statFloat(STAT_COMPLETION);
+    if (v === null || !Number.isFinite(v) || v < 0 || v > 100) return null;
+    return { value: v, offset: sf.stats.block.dataStart + STAT_COMPLETION * 4, confidence: "medium" };
   }
 };
 
@@ -557,11 +621,11 @@ function renderSummary(sf, v) {
     (extra ? '<div class="hint">' + extra + "</div>" : "") + "</div></div>";
 
   tiles.push(tile("Money", s.money ? fmtMoney(s.money.value) : "—", "money",
-    s.money ? "heuristic" + confBadge(s.money.confidence) : "not located"));
-  tiles.push(tile("Progress", s.progress ? (s.progress.made + " / " + s.progress.total) : "—", "",
-    s.progress ? "derived" + confBadge(s.progress.confidence) : "not located"));
+    s.money ? "PlayerInfo block" + confBadge(s.money.confidence) : "not located"));
+  tiles.push(tile("Completion", s.progress ? s.progress.value.toFixed(2) + "%" : "—", "",
+    s.progress ? "stats float " + STAT_COMPLETION + confBadge(s.progress.confidence) : "not located"));
   tiles.push(tile("Script globals", sf.script ? sf.script.count.toLocaleString() : "—", "",
-    sf.script ? "@ 0x" + sf.script.globalsStart.toString(16) : "SCR block missing"));
+    sf.script ? "@ 0x" + sf.script.globalsStart.toString(16) : "script block missing"));
   tiles.push(tile("Checklist mapped", Mapping.count() + " items", "",
     "of " + totalItems() + " — see Calibration"));
   $("#statTiles").innerHTML = tiles.join("");
@@ -769,8 +833,11 @@ async function handleFile(file) {
     const v = sf.validate();
     if (!v.ok) {
       err.classList.remove("d-none");
-      err.innerHTML = "<strong>This does not parse as a PC original SA save.</strong><ul class='mb-0'>" +
-        v.errs.map(e => "<li>" + esc(e) + "</li>").join("") + "</ul>";
+      err.innerHTML = "<strong>This does not parse as a PC original SA save.</strong><ul>" +
+        v.errs.map(e => "<li>" + esc(e) + "</li>").join("") + "</ul>" +
+        "<details><summary class='small'>Structure diagnostics</summary>" +
+        "<pre class='mono mb-0 mt-2' style='white-space:pre-wrap'>" +
+        esc(sf.diagnostics().join("\n")) + "</pre></details>";
       return;
     }
     renderAll(sf);
