@@ -11,12 +11,8 @@
      ============================================================ -->
 <style>
 :root{
-  --sa-green:#7cb342;
-  --sa-gold:#f2a900;
-  --sa-red:#c1443c;
-  --sa-panel:#15181c;
-  --sa-panel-2:#1d2126;
-  --sa-line:#2c323a;
+  --sa-green:#7cb342; --sa-gold:#f2a900; --sa-red:#c1443c;
+  --sa-panel:#15181c; --sa-panel-2:#1d2126; --sa-line:#2c323a;
 }
 body{
   background:
@@ -30,45 +26,33 @@ body{
   background:linear-gradient(92deg,var(--sa-green),var(--sa-gold));
   -webkit-background-clip:text; background-clip:text; color:transparent;
 }
-.panel{
-  background:var(--sa-panel); border:1px solid var(--sa-line);
-  border-radius:.9rem;
-}
-.panel-2{ background:var(--sa-panel-2); border:1px solid var(--sa-line); border-radius:.7rem; }
+.panel{ background:var(--sa-panel); border:1px solid var(--sa-line); border-radius:.9rem; }
 
-/* ---- drop zone ---- */
 #dropzone{
   border:2px dashed #3a424c; border-radius:1rem; padding:3.2rem 1.5rem;
-  text-align:center; cursor:pointer; transition:border-color .15s, background .15s, transform .15s;
+  text-align:center; cursor:pointer; transition:border-color .15s, background .15s;
   background:rgba(255,255,255,.015);
 }
 #dropzone:hover{ border-color:var(--sa-green); background:rgba(124,179,66,.05); }
-#dropzone.dragover{ border-color:var(--sa-gold); background:rgba(242,169,0,.09); transform:scale(1.01); }
+#dropzone.dragover{ border-color:var(--sa-gold); background:rgba(242,169,0,.09); }
 #dropzone .dz-icon{ font-size:2.6rem; line-height:1; }
 
-/* ---- stat tiles ---- */
-.stat-tile{
-  background:var(--sa-panel-2); border:1px solid var(--sa-line);
-  border-radius:.7rem; padding:.85rem 1rem; height:100%;
-}
+.stat-tile{ background:var(--sa-panel-2); border:1px solid var(--sa-line);
+  border-radius:.7rem; padding:.85rem 1rem; height:100%; }
 .stat-tile .k{ font-size:.7rem; text-transform:uppercase; letter-spacing:.09em; color:#8b949e; }
 .stat-tile .v{ font-size:1.35rem; font-weight:700; line-height:1.25; word-break:break-word; }
 .stat-tile .v.money{ color:var(--sa-green); }
 
-/* ---- completion ring ---- */
 .ring{ --pct:0; width:132px; height:132px; border-radius:50%; display:grid; place-items:center;
   background:conic-gradient(var(--sa-green) calc(var(--pct)*1%), #262c33 0);
   position:relative; flex:0 0 auto; }
 .ring::before{ content:""; position:absolute; inset:11px; border-radius:50%; background:var(--sa-panel); }
 .ring .ring-txt{ position:relative; text-align:center; }
-.ring .ring-pct{ font-size:1.75rem; font-weight:800; }
+.ring .ring-pct{ font-size:1.7rem; font-weight:800; }
 .ring .ring-sub{ font-size:.65rem; text-transform:uppercase; letter-spacing:.09em; color:#8b949e; }
 
-/* ---- checklist ---- */
-.chk-item{
-  display:flex; align-items:center; gap:.65rem; padding:.42rem .6rem;
-  border-radius:.4rem; border-left:3px solid transparent;
-}
+.chk-item{ display:flex; align-items:center; gap:.65rem; padding:.42rem .6rem;
+  border-radius:.4rem; border-left:3px solid transparent; }
 .chk-item:nth-child(odd){ background:rgba(255,255,255,.022); }
 .chk-item.done{ border-left-color:var(--sa-green); }
 .chk-item.todo{ border-left-color:var(--sa-red); }
@@ -79,6 +63,7 @@ body{
 .chk-item.done .chk-mark{ color:var(--sa-green); }
 .chk-item.todo .chk-mark{ color:var(--sa-red); }
 .chk-item.unknown .chk-mark{ color:#5b6673; }
+.chk-bar{ width:120px; flex:0 0 auto; }
 
 .group-head{ display:flex; align-items:center; gap:.75rem; }
 .group-head .progress{ flex:1 1 auto; max-width:280px; }
@@ -92,12 +77,15 @@ body{
 .nav-tabs .nav-link:hover{ color:#e6edf3; border-bottom-color:#39414b; }
 .nav-tabs .nav-link.active{ background:transparent; color:var(--sa-gold); border-bottom-color:var(--sa-gold); }
 
-.mono{ font-family:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,monospace; font-size:.82rem; }
+.mono{ font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; font-size:.82rem; }
 .table-sm td,.table-sm th{ padding:.32rem .5rem; }
 .badge-unmapped{ background:#39414b; color:#c3ccd7; }
 .hint{ color:#7d8590; font-size:.82rem; }
 .sticky-sum{ position:sticky; top:.75rem; z-index:5; }
 code.g{ color:var(--sa-gold); }
+.verified{ color:var(--sa-green); }
+.named{ color:#e6edf3; }
+.unnamed{ color:#7d8590; }
 </style>
 </head>
 <body>
@@ -114,7 +102,6 @@ code.g{ color:var(--sa-gold); }
 
 <main class="container py-4">
 
-  <!-- ---------- upload ---------- -->
   <section id="uploadSection">
     <div id="dropzone" class="mb-3">
       <div class="dz-icon mb-2">🎮</div>
@@ -124,16 +111,11 @@ code.g{ color:var(--sa-gold); }
       <input type="file" id="fileInput" class="d-none" accept=".b,.B,application/octet-stream">
     </div>
     <div id="loadError" class="alert alert-danger d-none"></div>
-    <p class="hint mb-0">
-      Saves live in <span class="mono">Documents\GTA San Andreas User Files\</span>.
-      Nothing is uploaded: parsing happens in your browser with <span class="mono">FileReader</span> + <span class="mono">DataView</span>.
-    </p>
+    <p class="hint mb-0">Saves live in <span class="mono">Documents\GTA San Andreas User Files\</span>.</p>
   </section>
 
-  <!-- ---------- dashboard ---------- -->
   <section id="dashboard" class="d-none">
 
-    <!-- summary -->
     <div class="panel p-3 p-md-4 mb-3 sticky-sum">
       <div class="d-flex flex-wrap align-items-center gap-4">
         <div class="ring" id="ring">
@@ -157,25 +139,25 @@ code.g{ color:var(--sa-gold); }
       </div>
     </div>
 
-    <!-- tabs -->
     <ul class="nav nav-tabs mb-3" role="tablist">
-      <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-todo" type="button">To-Do</button></li>
+      <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-todo" type="button">Overview</button></li>
+      <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-collect" type="button">Collectibles</button></li>
+      <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-stats" type="button">Game Stats</button></li>
       <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-story" type="button">Story Missions</button></li>
       <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-side" type="button">Side Missions</button></li>
-      <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-collect" type="button">Collectibles</button></li>
-      <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-assets" type="button">Assets &amp; Safehouses</button></li>
+      <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-assets" type="button">Assets</button></li>
       <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-explorer" type="button">Explorer</button></li>
-      <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-calib" type="button">Calibration <span class="badge badge-unmapped ms-1" id="unmappedCount">0</span></button></li>
+      <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-calib" type="button">Calibration</button></li>
     </ul>
 
     <div class="tab-content">
       <div class="tab-pane fade show active" id="tab-todo"></div>
+      <div class="tab-pane fade" id="tab-collect"></div>
+      <div class="tab-pane fade" id="tab-stats"></div>
       <div class="tab-pane fade" id="tab-story"></div>
       <div class="tab-pane fade" id="tab-side"></div>
-      <div class="tab-pane fade" id="tab-collect"></div>
       <div class="tab-pane fade" id="tab-assets"></div>
 
-      <!-- explorer -->
       <div class="tab-pane fade" id="tab-explorer">
         <div class="row g-3">
           <div class="col-lg-5">
@@ -190,8 +172,8 @@ code.g{ color:var(--sa-gold); }
             <div class="panel p-3">
               <h6 class="text-uppercase hint mb-2">Script globals</h6>
               <div class="row g-2 mb-2">
-                <div class="col"><input class="form-control form-control-sm" id="gSearchIdx" placeholder="Jump to global index, e.g. 180"></div>
-                <div class="col"><input class="form-control form-control-sm" id="gSearchVal" placeholder="Find by int value, e.g. 50"></div>
+                <div class="col"><input class="form-control form-control-sm" id="gSearchIdx" placeholder="Jump to global index"></div>
+                <div class="col"><input class="form-control form-control-sm" id="gSearchVal" placeholder="Find by int value"></div>
               </div>
               <div class="table-responsive" style="max-height:470px;overflow:auto">
                 <table class="table table-sm table-dark table-hover mono mb-0" id="globalsTable"></table>
@@ -201,23 +183,22 @@ code.g{ color:var(--sa-gold); }
         </div>
       </div>
 
-      <!-- calibration -->
       <div class="tab-pane fade" id="tab-calib">
         <div class="panel p-3 p-md-4 mb-3">
           <h5 class="mb-2">Calibrate mission flags</h5>
           <p class="hint mb-3">
-            Mission completion lives in the SCM global variable space, but the index of each flag is
-            game-build specific and is <em>not</em> guessed by this tool. To map one: load a save from
-            <strong>before</strong> a mission and one from <strong>after</strong> it — every global that changed
-            is listed below, and you bind the right one to a checklist entry. Mappings persist in this browser
-            and can be exported/imported.
+            Collectibles, completion % and the stat tables below are read from documented structures and need
+            no calibration. Individual <em>story mission</em> flags live in the SCM global variable space, and
+            the index of each flag is not published anywhere — so this tool does not guess them. Load a save from
+            before a mission and one from after it; every global that changed is listed here, and you bind the
+            right one to a checklist entry. Mappings persist in this browser and export as JSON.
           </p>
           <div class="row g-2 align-items-end">
             <div class="col-md-6">
               <label class="form-label small mb-1">Compare current save against…</label>
               <input type="file" class="form-control form-control-sm" id="diffInput" accept=".b,.B">
             </div>
-            <div class="col-md-6 d-flex gap-2">
+            <div class="col-md-6 d-flex gap-2 flex-wrap">
               <button class="btn btn-sm btn-outline-warning" id="mapExportBtn">Export mapping</button>
               <button class="btn btn-sm btn-outline-light" id="mapImportBtn">Import mapping</button>
               <button class="btn btn-sm btn-outline-danger" id="mapClearBtn">Clear</button>
@@ -249,44 +230,61 @@ code.g{ color:var(--sa-gold); }
 /* ============================================================
    1. BINARY LAYER
    ------------------------------------------------------------
-   Container:  [BLOCK][payload][BLOCK][payload]...[u32 checksum]
-   Block 1  :  "SCR\0" u32 blockSize u32 varSpaceSize  byte[varSpaceSize] globals
-   Global $N:  int32/float32 at globalsStart + N*4
+   Container : [BLOCK][payload] x 28, then a u32 byte-sum checksum.
+               A save is a fixed 202,752 B file, so markers found after
+               the 28th block are stale data from an earlier save state.
+   Block 1   : u32 varSpaceSize, then the globals array ($N at +4 + N*4).
+               San Andreas has NO "SCR" tag (that is a III/VC convention).
+   Block 15  : PlayerInfo — Money at +4, mirrored by MoneyOnScreen at +16.
+   Block 16  : Stats, 0x794 bytes. Layout confirmed against GTAMods wiki
+               and verified field-by-field against a known save:
+                 0x000  float  fStats[82]
+                 0x148  int    iStats[223]      (dwords 82..304)
+                 0x4C4  int    pedsKilled[32]
+                 0x544  char   lastMission[8]   (GXT key)
+                 0x54C  int    radioPlays[14]
+                 0x584  int    missionAttempts[100]
+                 0x714  byte   displayFlags[128]
+   Block 20  : Tags   — u32 count(100), then one status byte per tag (0xFF = sprayed).
+   Block 24  : Stunt jumps — u32 count(70), then 0x44-byte records, done flag at +64.
    ============================================================ */
 
 const BLOCK_SIG = [0x42, 0x4C, 0x4F, 0x43, 0x4B]; // "BLOCK"
-const SA_BLOCK_COUNT = 28;   // PC original writes exactly 28 blocks
-const STAT_FLOAT_COUNT = 82; // stats block: dwords 0..81 are floats, 82+ are ints
-const STAT_COMPLETION = 46;  // float index holding overall completion %
+const SA_BLOCK_COUNT = 28;
 
-/** Canonical-ish block order for the PC original save. Names are labels only —
- *  nothing below depends on a block being at a specific index. */
+const ST = {                 // stats block byte offsets
+  FLOATS: 0x000, FLOAT_COUNT: 82,
+  INTS:   0x148, INT_COUNT: 223,
+  KILLS:  0x4C4, KILL_COUNT: 32,
+  LAST_MISSION: 0x544, LAST_MISSION_LEN: 8,
+  RADIO:  0x54C, RADIO_COUNT: 14,
+  ATTEMPTS: 0x584, ATTEMPT_COUNT: 100,
+  FLAGS:  0x714, FLAG_COUNT: 128,
+  SIZE:   0x794
+};
+
 const BLOCK_NAMES = [
   "SimpleVars", "Scripts", "Pools", "Garages", "GameLogic", "Paths", "Pickups",
   "PhoneInfo", "RestartPoints", "RadarBlips", "Zones", "GangData", "CarGenerators",
   "PedGenerators", "AudioScriptObjects", "PlayerInfo", "Stats", "SetPieces",
-  "Streaming", "PedTypes", "TagManager", "IplStore", "Shopping", "GangWars",
+  "Streaming", "PedTypes", "Tags", "IplStore", "Shopping", "GangWars",
   "StuntJumps", "EntryExits", "Radio", "User3dMarkers"
 ];
 
 class SaveFile {
   constructor(buffer, fileName) {
     this.name = fileName;
-    this.buf = buffer;
     this.bytes = new Uint8Array(buffer);
     this.dv = new DataView(buffer);
-    this.warnings = [];
     this.blocks = this._scanBlocks();
     this.checksum = this._checksum();
     this.script = this._parseScriptBlock();
     this.playerInfo = this._findPlayerInfo();
     this.stats = this._findStats();
+    this.tags = this._parseTags();
+    this.jumps = this._parseStuntJumps();
   }
 
-  /* --- locate every "BLOCK" marker; payload runs to the next marker.
-         Only the first SA_BLOCK_COUNT are real: a save is a fixed-size file,
-         so anything past the 28th block is stale data left over from an
-         earlier, longer save state (and carries its own stray markers). --- */
   _scanBlocks() {
     const b = this.bytes, out = [], starts = [];
     const limit = b.length - BLOCK_SIG.length;
@@ -297,163 +295,157 @@ class SaveFile {
       if (hit) starts.push(i);
     }
     this.markerCount = starts.length;
-
     const used = starts.slice(0, SA_BLOCK_COUNT);
-    // Real data ends where the first stale marker begins (or at the checksum).
     this.dataEnd = (starts.length > SA_BLOCK_COUNT) ? starts[SA_BLOCK_COUNT] : Math.max(0, b.length - 4);
     this.staleTailBytes = Math.max(0, b.length - 4 - this.dataEnd);
-
     for (let i = 0; i < used.length; i++) {
       const dataStart = used[i] + BLOCK_SIG.length;
       const dataEnd = (i + 1 < used.length) ? used[i + 1] : this.dataEnd;
-      out.push({
-        index: i,
-        name: BLOCK_NAMES[i] || ("Block " + i),
-        markerOffset: used[i],
-        dataStart,
-        size: Math.max(0, dataEnd - dataStart)   // 0 is legal: empty blocks exist
-      });
+      out.push({ index: i, name: BLOCK_NAMES[i] || ("Block " + i),
+                 markerOffset: used[i], dataStart, size: Math.max(0, dataEnd - dataStart) });
     }
     return out;
   }
 
   _checksum() {
     if (this.bytes.length < 8) return null;
-    let sum = 0;
-    const n = this.bytes.length - 4;
+    let sum = 0; const n = this.bytes.length - 4;
     for (let i = 0; i < n; i++) sum = (sum + this.bytes[i]) >>> 0;
     return { computed: sum, stored: this.dv.getUint32(n, true) };
   }
 
-  /** Structural validation — no magic offsets involved. */
-  validate() {
-    const errs = [], warns = [];
-    if (this.bytes.length < 60000) errs.push("File is far too small to be a San Andreas save (" + this.bytes.length + " bytes).");
-    if (this.blocks.length < SA_BLOCK_COUNT) errs.push("Only " + this.blocks.length + " BLOCK markers found (expected " + SA_BLOCK_COUNT + ") — this does not look like a PC original SA save.");
-    if (this.blocks.length && this.blocks[0].markerOffset !== 0) warns.push("First BLOCK marker is at offset " + this.blocks[0].markerOffset + ", not 0 — file may be a mobile/remastered variant.");
-    if (this.bytes.length < 195000 || this.bytes.length > 215000) warns.push("Unusual file size (" + this.bytes.length.toLocaleString() + " B). PC originals are normally 202,752 B.");
-    if (this.checksum && this.checksum.computed !== this.checksum.stored) warns.push("Trailing checksum does not match the byte-sum of the file — the save may have been edited.");
-    if (!this.script) errs.push("Could not identify the script block (no block opens with a plausible variable-space size) — mission data is unreadable.");
-    else if (this.scriptMatches > 1) warns.push(this.scriptMatches + " blocks matched the script-block signature; used block " + this.script.block.index + ".");
-    if (!this.playerInfo) warns.push("PlayerInfo block not identified — money is unavailable.");
-    if (!this.stats) warns.push("Stats block not identified — completion % and counters are unavailable.");
-    return { ok: errs.length === 0, errs, warns };
-  }
-
-  /** Find every occurrence of a byte signature in the file. */
-  _findSig(sig, limitHits) {
-    const b = this.bytes, hits = [], end = b.length - sig.length;
-    for (let i = 0; i <= end; i++) {
-      if (b[i] !== sig[0]) continue;
-      let ok = true;
-      for (let k = 1; k < sig.length; k++) if (b[i + k] !== sig[k]) { ok = false; break; }
-      if (ok) { hits.push(i); if (limitHits && hits.length >= limitHits) break; }
-    }
-    return hits;
-  }
-
-  blockAt(offset) {
-    for (const b of this.blocks) if (offset >= b.dataStart && offset < b.dataStart + b.size) return b;
-    return null;
-  }
-
-  /* --- script block ---
-     San Andreas has NO "SCR" tag (that is a GTA III / Vice City convention).
-     The script block simply opens with a u32 giving the size of the global
-     variable space, and the globals follow immediately at +4. Identified by
-     that signature rather than by block index, so a stray "BLOCK" byte
-     sequence in an earlier payload cannot mislocate it. */
   _parseScriptBlock() {
-    const matches = [];
     for (const blk of this.blocks) {
       if (blk.size < 0x8000) continue;
       const vs = this.dv.getUint32(blk.dataStart, true);
       if (vs <= 0x8000 || vs >= blk.size) continue;
       if (blk.dataStart + 4 + vs > this.bytes.length) continue;
-      matches.push({
-        block: blk, globalsStart: blk.dataStart + 4,
-        varSpaceSize: vs, count: Math.floor(vs / 4)
-      });
+      return { block: blk, globalsStart: blk.dataStart + 4, varSpaceSize: vs, count: Math.floor(vs / 4) };
     }
-    this.scriptMatches = matches.length;
-    return matches.length ? matches[0] : null;
+    return null;
   }
 
-  /* --- PlayerInfo: a small block whose Money (+4) is mirrored by
-         MoneyOnScreen (+16). Note the two are 12 bytes apart, not adjacent. --- */
   _findPlayerInfo() {
-    const hits = [];
     for (const blk of this.blocks) {
       if (blk.size < 24 || blk.size > 128) continue;
       const money = this.dv.getInt32(blk.dataStart + 4, true);
-      const onScreen = this.dv.getInt32(blk.dataStart + 16, true);
-      if (money !== onScreen || money < 0 || money > 900000000) continue;
-      hits.push({ block: blk, money, offset: blk.dataStart + 4 });
+      if (money !== this.dv.getInt32(blk.dataStart + 16, true)) continue;
+      if (money < 0 || money > 900000000) continue;
+      return { block: blk, money, offset: blk.dataStart + 4 };
     }
-    if (!hits.length) return null;
-    const preferred = hits.find(h => h.block.index === 15);
-    return preferred || hits[0];
+    return null;
   }
 
-  /* --- Stats: the block immediately after PlayerInfo. Leading dwords are
-         floats (weapon skills, completion %), the tail is int counters. --- */
   _findStats() {
-    if (!this.playerInfo) return null;
-    const blk = this.blocks[this.playerInfo.block.index + 1];
-    if (!blk || blk.size < 400) return null;
-    return { block: blk, count: Math.floor(blk.size / 4) };
+    // The stats block has a fixed, distinctive size.
+    let blk = this.blocks.find(b => b.size === ST.SIZE);
+    if (!blk && this.playerInfo) blk = this.blocks[this.playerInfo.block.index + 1];
+    if (!blk || blk.size < ST.FLAGS) return null;
+    return { block: blk, base: blk.dataStart, exactSize: blk.size === ST.SIZE };
   }
 
-  statFloat(i) {
-    if (!this.stats || i < 0 || i >= this.stats.count) return null;
-    return this.dv.getFloat32(this.stats.block.dataStart + i * 4, true);
-  }
-  statInt(i) {
-    if (!this.stats || i < 0 || i >= this.stats.count) return null;
-    return this.dv.getInt32(this.stats.block.dataStart + i * 4, true);
+  _parseTags() {
+    const blk = this.blocks[20];
+    if (!blk || blk.size < 8) return null;
+    const total = this.dv.getUint32(blk.dataStart, true);
+    if (total < 1 || total > 500 || blk.size < 4 + total) return null;
+    let sprayed = 0;
+    for (let i = 0; i < total; i++) if (this.bytes[blk.dataStart + 4 + i] !== 0) sprayed++;
+    return { total, done: sprayed };
   }
 
-  /** Human-readable dump used when parsing fails, so the cause is visible. */
+  _parseStuntJumps() {
+    const blk = this.blocks[24];
+    if (!blk || blk.size < 8) return null;
+    const total = this.dv.getUint32(blk.dataStart, true);
+    if (total < 1 || total > 200) return null;
+    const rec = Math.floor((blk.size - 4) / total);
+    if (rec < 32 || rec > 128) return null;
+    let done = 0, found = 0;
+    for (let i = 0; i < total; i++) {
+      const p = blk.dataStart + 4 + i * rec;
+      if (this.bytes[p + 64]) done++;
+      if (this.bytes[p + 65]) found++;
+    }
+    return { total, done, found, recordSize: rec };
+  }
+
+  /* --- accessors --- */
+  gInt(i)   { const p = this.script.globalsStart + i * 4; return (p + 4 <= this.bytes.length) ? this.dv.getInt32(p, true) : null; }
+  gFloat(i) { const p = this.script.globalsStart + i * 4; return (p + 4 <= this.bytes.length) ? this.dv.getFloat32(p, true) : null; }
+
+  _st(off) { return this.stats ? this.stats.base + off : -1; }
+  fStat(i) { if (!this.stats || i < 0 || i >= ST.FLOAT_COUNT) return null; return this.dv.getFloat32(this._st(ST.FLOATS + i * 4), true); }
+  iStat(i) { if (!this.stats || i < 0 || i >= ST.INT_COUNT) return null;   return this.dv.getInt32(this._st(ST.INTS + i * 4), true); }
+  /** Int stat by PHYSICAL dword index from the block start (floats occupy 0..81),
+   *  which is the numbering used by NAMED_INT_STATS and by the Explorer. */
+  iStatPhys(n) { return this.iStat(n - ST.FLOAT_COUNT); }
+  pedKill(i){ if (!this.stats || i < 0 || i >= ST.KILL_COUNT) return null; return this.dv.getInt32(this._st(ST.KILLS + i * 4), true); }
+  radio(i)  { if (!this.stats || i < 0 || i >= ST.RADIO_COUNT) return null;return this.dv.getInt32(this._st(ST.RADIO + i * 4), true); }
+  attempt(i){ if (!this.stats || i < 0 || i >= ST.ATTEMPT_COUNT) return null; return this.dv.getInt32(this._st(ST.ATTEMPTS + i * 4), true); }
+  lastMissionKey() {
+    if (!this.stats) return null;
+    let s = "";
+    for (let i = 0; i < ST.LAST_MISSION_LEN; i++) {
+      const c = this.bytes[this._st(ST.LAST_MISSION) + i];
+      if (!c) break;
+      if (c < 0x20 || c > 0x7e) return null;
+      s += String.fromCharCode(c);
+    }
+    return s || null;
+  }
+
+  validate() {
+    const errs = [], warns = [];
+    if (this.bytes.length < 60000) errs.push("File is far too small to be a San Andreas save (" + this.bytes.length + " bytes).");
+    if (this.blocks.length < SA_BLOCK_COUNT) errs.push("Only " + this.blocks.length + " BLOCK markers found (expected " + SA_BLOCK_COUNT + ") — not a PC original SA save.");
+    if (this.blocks.length && this.blocks[0].markerOffset !== 0) warns.push("First BLOCK marker is not at offset 0 — file may be a mobile/remastered variant.");
+    if (this.bytes.length < 195000 || this.bytes.length > 215000) warns.push("Unusual file size (" + this.bytes.length.toLocaleString() + " B); PC originals are 202,752 B.");
+    if (this.checksum && this.checksum.computed !== this.checksum.stored) warns.push("Trailing checksum does not match the byte-sum of the file — the save may have been edited.");
+    if (!this.script) errs.push("Could not identify the script block — mission data is unreadable.");
+    if (!this.stats) warns.push("Stats block not identified — completion % and stat tables are unavailable.");
+    else if (!this.stats.exactSize) warns.push("Stats block is " + this.stats.block.size + " B, expected " + ST.SIZE + " B; stat indices may be shifted.");
+    if (!this.playerInfo) warns.push("PlayerInfo block not identified — money is unavailable.");
+    return { ok: errs.length === 0, errs, warns };
+  }
+
   diagnostics() {
-    const hex = o => {
-      const parts = [];
-      for (let i = 0; i < 12 && o + i < this.bytes.length; i++) parts.push(this.bytes[o + i].toString(16).padStart(2, "0"));
-      return parts.join(" ");
-    };
-    const ascii = o => {
-      let s = "";
-      for (let i = 0; i < 12 && o + i < this.bytes.length; i++) {
-        const c = this.bytes[o + i];
-        s += (c >= 0x20 && c <= 0x7e) ? String.fromCharCode(c) : ".";
-      }
-      return s;
-    };
+    const hex = o => { const p = []; for (let i = 0; i < 12 && o + i < this.bytes.length; i++) p.push(this.bytes[o + i].toString(16).padStart(2, "0")); return p.join(" "); };
     const lines = [];
-    lines.push("size=" + this.bytes.length + " B, blocks=" + this.blocks.length +
-      ", BLOCK markers=" + this.markerCount + ", stale tail=" + this.staleTailBytes + " B");
-    lines.push("script=" + (this.script ? "block " + this.script.block.index + ", " + this.script.count + " globals @0x" + this.script.globalsStart.toString(16) : "NOT FOUND") +
+    lines.push("size=" + this.bytes.length + " B, blocks=" + this.blocks.length + ", markers=" + this.markerCount + ", stale tail=" + this.staleTailBytes + " B");
+    lines.push("script=" + (this.script ? "block " + this.script.block.index + ", " + this.script.count + " globals" : "NOT FOUND") +
       "  playerInfo=" + (this.playerInfo ? "block " + this.playerInfo.block.index : "NOT FOUND") +
-      "  stats=" + (this.stats ? "block " + this.stats.block.index : "NOT FOUND"));
+      "  stats=" + (this.stats ? "block " + this.stats.block.index + " (" + this.stats.block.size + " B)" : "NOT FOUND"));
     for (const b of this.blocks.slice(0, 6))
-      lines.push("block " + b.index + " data@0x" + b.dataStart.toString(16) +
-        " size=" + b.size + "  " + hex(b.dataStart) + "  |" + ascii(b.dataStart) + "|");
+      lines.push("block " + b.index + " @0x" + b.dataStart.toString(16) + " size=" + b.size + "  " + hex(b.dataStart));
     return lines;
   }
-
-  gInt(i)   { const p = this.script.globalsStart + i * 4; return (p + 4 <= this.bytes.length) ? this.dv.getInt32(p, true)   : null; }
-  gFloat(i) { const p = this.script.globalsStart + i * 4; return (p + 4 <= this.bytes.length) ? this.dv.getFloat32(p, true) : null; }
 }
 
 /* ============================================================
-   2. HEURISTIC EXTRACTION
+   2. NAMED VALUES
    ------------------------------------------------------------
-   These use structural signatures rather than hard-coded offsets,
-   so each result carries a confidence label the UI surfaces.
+   Every entry below was verified against a reference save whose
+   published figures are known (GTASNP wAxFop): 65.24% complete,
+   $509,162, 18/100 tags, 0/50 snapshots, 2/50 horseshoes,
+   2/50 oysters, 11/70 stunt jumps.
    ============================================================ */
 
+/** Stat indices confirmed by matching that reference save exactly. */
+const NAMED_FLOAT_STATS = {
+  0: "Progress made",
+  1: "Total progress required"
+};
+const NAMED_INT_STATS = {
+  107: "Unique stunt jumps done",
+  109: "Gang tags total",
+  193: "Snapshots taken",  194: "Snapshots total",
+  203: "Horseshoes found", 204: "Horseshoes total",
+  205: "Oysters found",    206: "Oysters total"
+};
+
 const Extract = {
-  /** SimpleVars: u32, then the last-passed mission name as a NUL-terminated
-   *  ASCII string. (This is what the in-game load menu shows as the slot name.) */
+  /** SimpleVars: u32, then the last-passed mission name as NUL-terminated ASCII. */
   saveName(sf) {
     if (!sf.blocks.length) return null;
     const start = sf.blocks[0].dataStart + 4;
@@ -467,26 +459,37 @@ const Extract = {
     return s.trim().length >= 2 ? { value: s.trim(), confidence: "high" } : null;
   },
 
-  /** Money, read directly from the located PlayerInfo block. */
   money(sf) {
     if (!sf.playerInfo) return null;
-    return { value: sf.playerInfo.money, offset: sf.playerInfo.offset, confidence: "high" };
+    return { value: sf.playerInfo.money, confidence: "high" };
   },
 
-  /** Overall completion %, read from the stats block float array. */
+  /** Completion = progressMade / totalProgress. Verified: 122/187 = 65.24%. */
   progress(sf) {
-    const v = sf.statFloat(STAT_COMPLETION);
-    if (v === null || !Number.isFinite(v) || v < 0 || v > 100) return null;
-    return { value: v, offset: sf.stats.block.dataStart + STAT_COMPLETION * 4, confidence: "medium" };
+    const made = sf.fStat(0), total = sf.fStat(1);
+    if (made === null || total === null) return null;
+    if (!(total > 0) || !Number.isFinite(made) || made < 0 || made > total * 1.5) return null;
+    return { made, total, value: (made / total) * 100, confidence: "high" };
+  },
+
+  /** Collectibles, each from its verified structural source. */
+  collectibles(sf) {
+    const out = [];
+    const push = (name, done, total, src) => {
+      if (done === null || total === null || !(total > 0)) return;
+      out.push({ name, done, total, pct: Math.min(100, (done / total) * 100), source: src });
+    };
+    if (sf.tags)   push("Gang Tags", sf.tags.done, sf.tags.total, "block 20");
+    push("Snapshots",  sf.iStatPhys(193), sf.iStatPhys(194), "stats 193/194");
+    push("Horseshoes", sf.iStatPhys(203), sf.iStatPhys(204), "stats 203/204");
+    push("Oysters",    sf.iStatPhys(205), sf.iStatPhys(206), "stats 205/206");
+    if (sf.jumps) push("Unique Stunt Jumps", sf.jumps.done, sf.jumps.total, "block 24");
+    return out;
   }
 };
 
 /* ============================================================
    3. CHECKLIST MODEL
-   ------------------------------------------------------------
-   Each item may declare a `target` (a counter goal). Its data
-   source comes from the user-editable mapping, never from a
-   guessed constant.
    ============================================================ */
 
 const id = s => s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
@@ -507,33 +510,25 @@ const CATEGORIES = {
   side: {
     title: "Side Missions & Jobs",
     groups: [
-      { name: "Vehicle Jobs", items: [ mk("Taxi Driver", 50, "50 fares"), mk("Vigilante", 12, "Level 12"), mk("Firefighter", 12, "Level 12"), mk("Paramedic", 12, "Level 12"), mk("Pimping", 10, "Level 10"), mk("Freight / Trucking", 8, "8 missions"), mk("Quarry", 7, "7 missions"), mk("Valet Parking", 5, "Level 5"), mk("Courier — Los Santos", 1), mk("Courier — San Fierro", 1), mk("Courier — Las Venturas", 1), mk("Burglary", null, "$10,000 stolen") ] },
+      { name: "Vehicle Jobs", items: [ mk("Taxi Driver", 50, "50 fares"), mk("Vigilante", 12, "Level 12"), mk("Firefighter", 12, "Level 12"), mk("Paramedic", 12, "Level 12"), mk("Pimping", 10, "Level 10"), mk("Freight / Trucking", 8), mk("Quarry", 7), mk("Valet Parking", 5), mk("Courier — Los Santos", 1), mk("Courier — San Fierro", 1), mk("Courier — Las Venturas", 1), mk("Burglary", null, "$10,000 stolen") ] },
       { name: "Schools", items: ["Driving School","Bike School","Boat School","Flying School"].map(n => mk(n, null, "All licences at Bronze or better")) },
-      { name: "Street Challenges", items: [ mk("Street Races", 12), mk("Lowrider Challenge"), mk("BMX Challenge"), mk("NRG-500 Challenge"), mk("Chiliad Challenge", 3), mk("8-Track"), mk("Dirt Track"), mk("Blood Ring"), mk("Kickstart"), mk("Shooting Range", null, "All 4 weapon ranges"), mk("Beefy Baron"), mk("Gang Wars", null, "All Los Santos territories") ] }
-    ]
-  },
-  collect: {
-    title: "Collectibles & Challenges",
-    groups: [
-      { name: "Collectibles", items: [ mk("Gang Tags", 100), mk("Snapshots", 50), mk("Horseshoes", 50), mk("Oysters", 50), mk("Unique Stunt Jumps", 70) ] },
-      { name: "Skills & Fitness", items: [ mk("Pistol Skill", 1000, "Hitman level"), mk("Silenced Pistol Skill", 1000), mk("Desert Eagle Skill", 1000), mk("Shotgun Skill", 1000), mk("Sawn-off Skill", 1000), mk("Combat Shotgun Skill", 1000), mk("Micro SMG Skill", 1000), mk("SMG Skill", 1000), mk("AK-47 Skill", 1000), mk("M4 Skill", 1000), mk("Lung Capacity", null), mk("Stamina", null), mk("Muscle", null), mk("Driving Skill", null), mk("Bike Skill", null), mk("Cycling Skill", null), mk("Flying Skill", null) ] },
-      { name: "Dating & Social", items: ["Denise Robinson","Michelle Cannes","Helena Wankstein","Barbara Schternvart","Katie Zhan","Millie Perkins"].map(n => mk(n, null, "100% relationship")) }
+      { name: "Street Challenges", items: [ mk("Street Races", 12), mk("Lowrider Challenge"), mk("BMX Challenge"), mk("NRG-500 Challenge"), mk("Chiliad Challenge", 3), mk("8-Track"), mk("Dirt Track"), mk("Blood Ring"), mk("Kickstart"), mk("Shooting Range"), mk("Beefy Baron"), mk("Gang Wars", null, "All Los Santos territories") ] }
     ]
   },
   assets: {
     title: "Assets & Safehouses",
     groups: [
-      { name: "Asset Properties", items: [ mk("Roboi's Food Mart (Courier)"), mk("Hippy Shopper (Courier)"), mk("Burger Shot (Courier)"), mk("Wang Cars"), mk("Zero's RC Shop"), mk("The Johnson House"), mk("Verdant Meadows Airstrip"), mk("Quarry"), mk("Valet — Vank Hoff Hotel") ] },
-      { name: "Safehouses", items: ["Ganton (Johnson House)","Santa Maria Beach","El Corona","Mulholland","Verona Beach","Rockshore West","Palomino Creek","Dillimore","Fort Carson","Angel Pine","Whetstone","Doherty (Garage)","Hashbury","Calton Heights","Paradiso","Chinatown","Prickle Pine","Redsands West","Whitewood Estates","Rockshore East","Old Venturas Strip","Creek","Camel's Toe","Pirates in Men's Pants","Tierra Robada","Verdant Bluffs","Willowfield","Jefferson","Mulholland Safe House"].map(n => mk(n)) }
+      { name: "Asset Properties", items: [ mk("Roboi's Food Mart (Courier)"), mk("Hippy Shopper (Courier)"), mk("Burger Shot (Courier)"), mk("Wang Cars"), mk("Zero's RC Shop"), mk("Verdant Meadows Airstrip"), mk("Quarry"), mk("Valet — Vank Hoff Hotel") ] },
+      { name: "Safehouses", items: ["Ganton (Johnson House)","Santa Maria Beach","El Corona","Mulholland","Verona Beach","Rockshore West","Palomino Creek","Dillimore","Fort Carson","Angel Pine","Whetstone","Doherty (Garage)","Hashbury","Calton Heights","Paradiso","Chinatown","Prickle Pine","Redsands West","Whitewood Estates","Rockshore East","Old Venturas Strip","Creek","Camel's Toe","Pirates in Men's Pants","Tierra Robada","Verdant Bluffs","Willowfield","Jefferson"].map(n => mk(n)) }
     ]
   }
 };
 
 /* ============================================================
-   4. MAPPING STORE  (user-calibrated global indices)
+   4. MAPPING STORE (user-calibrated global indices)
    ============================================================ */
 
-const MAP_KEY = "sa-save-analyser-mapping-v1";
+const MAP_KEY = "sa-save-analyser-mapping-v2";
 const Mapping = {
   data: {},
   load() { try { this.data = JSON.parse(localStorage.getItem(MAP_KEY) || "{}"); } catch { this.data = {}; } },
@@ -543,17 +538,14 @@ const Mapping = {
   count() { return Object.keys(this.data).length; }
 };
 
-/** Resolve one checklist item against the loaded save + mapping. */
 function resolveItem(item, sf) {
   const m = Mapping.get(item.id);
   if (!m || !sf.script) return { state: "unknown", label: "Not calibrated" };
   const raw = m.type === "float" ? sf.gFloat(m.index) : sf.gInt(m.index);
   if (raw === null || Number.isNaN(raw)) return { state: "unknown", label: "Out of range" };
-
   if (item.target) {
     const cur = Math.max(0, Math.round(raw));
-    const done = cur >= item.target;
-    return { state: done ? "done" : "todo", value: cur,
+    return { state: cur >= item.target ? "done" : "todo", value: cur,
              label: cur + " / " + item.target, pct: Math.min(100, (cur / item.target) * 100) };
   }
   const done = m.doneWhen === "zero" ? raw === 0 : raw !== 0;
@@ -567,81 +559,213 @@ function resolveItem(item, sf) {
 const $ = s => document.querySelector(s);
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;" }[c]));
 const fmtMoney = n => "$" + Number(n).toLocaleString("en-US");
+const fmtNum = n => Number(n).toLocaleString("en-US");
 
-let SF = null;          // current SaveFile
-let SUMMARY = null;     // extracted summary values
+let SF = null, SUMMARY = null;
 
 function renderAll(sf) {
   SF = sf;
-  const v = sf.validate();
-
   SUMMARY = {
     saveName: Extract.saveName(sf),
     money: Extract.money(sf),
-    progress: Extract.progress(sf)
+    progress: Extract.progress(sf),
+    collectibles: Extract.collectibles(sf),
+    lastMission: sf.lastMissionKey()
   };
-
   $("#uploadSection").classList.add("d-none");
   $("#dashboard").classList.remove("d-none");
 
-  renderSummary(sf, v);
+  renderSummary(sf, sf.validate());
+  renderOverview();
+  renderCollectibles();
+  renderStats();
   renderCategory("#tab-story", CATEGORIES.story);
   renderCategory("#tab-side", CATEGORIES.side);
-  renderCategory("#tab-collect", CATEGORIES.collect);
   renderCategory("#tab-assets", CATEGORIES.assets);
-  renderTodo();
   renderBlocks(sf);
   renderGlobals(sf, 0);
-  updateUnmappedBadge();
-}
-
-function confBadge(c) {
-  if (!c) return "";
-  const cls = c === "high" ? "text-bg-success" : c === "medium" ? "text-bg-warning" : "text-bg-danger";
-  return ' <span class="badge ' + cls + '" title="Extraction confidence">' + c + "</span>";
 }
 
 function renderSummary(sf, v) {
   const s = SUMMARY;
   $("#saveName").textContent = s.saveName ? s.saveName.value : "Unnamed save";
   $("#fileBadge").textContent = sf.name + " · " + sf.bytes.length.toLocaleString() + " B";
-
   const vb = $("#validBadge");
   vb.className = "badge " + (v.ok ? "text-bg-success" : "text-bg-danger");
-  vb.textContent = v.ok ? "Valid save · " + sf.blocks.length + " blocks" : "Structure problems";
+  vb.textContent = v.ok ? "Valid · " + sf.blocks.length + " blocks" : "Structure problems";
 
   const pct = s.progress ? s.progress.value : null;
-  $("#ring").style.setProperty("--pct", pct == null ? 0 : pct.toFixed(1));
-  $("#ringPct").textContent = pct == null ? "—" : pct.toFixed(1) + "%";
+  $("#ring").style.setProperty("--pct", pct == null ? 0 : pct.toFixed(2));
+  $("#ringPct").textContent = pct == null ? "—" : pct.toFixed(2) + "%";
 
-  const tiles = [];
   const tile = (k, val, cls, extra) =>
     '<div class="col-6 col-xl-3"><div class="stat-tile"><div class="k">' + esc(k) +
     '</div><div class="v ' + (cls || "") + '">' + val + "</div>" +
     (extra ? '<div class="hint">' + extra + "</div>" : "") + "</div></div>";
 
-  tiles.push(tile("Money", s.money ? fmtMoney(s.money.value) : "—", "money",
-    s.money ? "PlayerInfo block" + confBadge(s.money.confidence) : "not located"));
-  tiles.push(tile("Completion", s.progress ? s.progress.value.toFixed(2) + "%" : "—", "",
-    s.progress ? "stats float " + STAT_COMPLETION + confBadge(s.progress.confidence) : "not located"));
-  tiles.push(tile("Script globals", sf.script ? sf.script.count.toLocaleString() : "—", "",
-    sf.script ? "@ 0x" + sf.script.globalsStart.toString(16) : "script block missing"));
-  tiles.push(tile("Checklist mapped", Mapping.count() + " items", "",
-    "of " + totalItems() + " — see Calibration"));
+  const tiles = [];
+  tiles.push(tile("Money", s.money ? fmtMoney(s.money.value) : "—", "money", "PlayerInfo block"));
+  tiles.push(tile("Progress", s.progress ? (s.progress.made + " / " + s.progress.total) : "—", "", "checklist items done"));
+  tiles.push(tile("Last mission", s.lastMission ? esc(s.lastMission) : "—", "", "GXT key from stats"));
+  tiles.push(tile("Checksum", sf.checksum && sf.checksum.computed === sf.checksum.stored ? "Valid" : "Mismatch", "",
+    sf.staleTailBytes ? fmtNum(sf.staleTailBytes) + " B stale tail" : "no stale data"));
   $("#statTiles").innerHTML = tiles.join("");
 
   const notes = [...v.errs.map(e => ["danger", e]), ...v.warns.map(w => ["warning", w])];
-  if (notes.length) {
+  if (notes.length)
     $("#statTiles").insertAdjacentHTML("beforeend",
       '<div class="col-12">' + notes.map(([lvl, t]) =>
         '<div class="alert alert-' + lvl + ' py-1 px-2 mb-1 small">' + esc(t) + "</div>").join("") + "</div>");
-  }
 }
 
-function totalItems() {
-  return Object.values(CATEGORIES).reduce((a, c) =>
-    a + c.groups.reduce((b, g) => b + g.items.length, 0), 0);
+/* ---------- overview ---------- */
+
+function bar(pct, cls) {
+  return '<div class="progress" style="height:8px"><div class="progress-bar ' + (cls || "bg-success") +
+         '" style="width:' + pct.toFixed(1) + '%"></div></div>';
 }
+
+function renderOverview() {
+  const s = SUMMARY;
+  const coll = s.collectibles;
+  const collRows = coll.map(c => {
+    const done = c.done >= c.total;
+    return '<div class="chk-item ' + (done ? "done" : "todo") + '">' +
+      '<span class="chk-mark">' + (done ? "✔" : "✘") + "</span>" +
+      '<span class="chk-name">' + esc(c.name) + "<small>" + esc(c.source) + "</small></span>" +
+      '<span class="chk-bar">' + bar(c.pct, done ? "bg-success" : "bg-warning") + "</span>" +
+      '<span class="badge ' + (done ? "text-bg-success" : "text-bg-danger") + '">' +
+        c.done + " / " + c.total + "</span></div>";
+  }).join("");
+
+  const missing = coll.filter(c => c.done < c.total)
+    .map(c => "<li>" + esc(c.name) + " — <strong>" + (c.total - c.done) + "</strong> remaining</li>").join("");
+
+  $("#tab-todo").innerHTML =
+    '<div class="row g-3">' +
+      '<div class="col-lg-6"><div class="panel p-3">' +
+        '<h5 class="mb-1">Completion</h5>' +
+        (s.progress
+          ? '<p class="hint mb-2">' + s.progress.made + " of " + s.progress.total +
+            " checklist items done — <strong>" + s.progress.value.toFixed(2) + "%</strong>. " +
+            "Read from the stats block (progress made ÷ total progress).</p>" + bar(s.progress.value)
+          : '<p class="hint">Completion could not be read.</p>') +
+        '<hr><h6 class="mb-2">Collectibles</h6>' + collRows +
+      "</div></div>" +
+      '<div class="col-lg-6"><div class="panel p-3">' +
+        '<h5 class="mb-1">Outstanding</h5>' +
+        (missing ? "<ul class='mb-3'>" + missing + "</ul>" : '<p class="hint">All collectibles complete.</p>') +
+        '<hr><h6>Story missions</h6>' +
+        '<p class="hint mb-1">Last mission passed: <code class="g">' + esc(s.lastMission || "unknown") + "</code></p>" +
+        '<p class="hint mb-0">Per-mission flags live in the script globals and their indices are not published; ' +
+        'this tool will not guess them. Bind them yourself in the <strong>Calibration</strong> tab — everything ' +
+        'else on this page is read from documented structures and needs no calibration.</p>' +
+      "</div></div>" +
+    "</div>";
+}
+
+function renderCollectibles() {
+  const coll = SUMMARY.collectibles;
+  const cards = coll.map(c => {
+    const done = c.done >= c.total;
+    return '<div class="col-md-6 col-xl-4"><div class="panel p-3 h-100">' +
+      '<div class="d-flex justify-content-between align-items-start mb-2">' +
+        "<h6 class='mb-0'>" + esc(c.name) + "</h6>" +
+        '<span class="badge ' + (done ? "text-bg-success" : "text-bg-danger") + '">' +
+          (done ? "Complete" : (c.total - c.done) + " left") + "</span></div>" +
+      '<div class="d-flex align-items-baseline gap-2 mb-2">' +
+        '<span style="font-size:1.6rem;font-weight:700">' + c.done + '</span>' +
+        '<span class="hint">of ' + c.total + " · " + c.pct.toFixed(0) + "%</span></div>" +
+      bar(c.pct, done ? "bg-success" : "bg-warning") +
+      '<div class="hint mt-2">source: ' + esc(c.source) + "</div>" +
+    "</div></div>";
+  }).join("");
+
+  const j = SF.jumps;
+  $("#tab-collect").innerHTML =
+    '<div class="row g-3 mb-3">' + cards + "</div>" +
+    (j ? '<div class="panel p-3"><h6 class="mb-2">Stunt jump detail</h6>' +
+         '<p class="hint mb-0">' + j.total + " jumps in the table (" + j.recordSize + " B per record); " +
+         j.done + " completed, " + j.found + " discovered.</p></div>" : "");
+}
+
+/* ---------- game stats ---------- */
+
+function statTable(rows, cols) {
+  return '<div class="table-responsive" style="max-height:460px;overflow:auto">' +
+    '<table class="table table-sm table-dark table-hover mb-0"><thead><tr>' +
+    cols.map(c => "<th>" + esc(c) + "</th>").join("") + "</tr></thead><tbody>" +
+    rows + "</tbody></table></div>";
+}
+
+function renderStats() {
+  const sf = SF;
+  if (!sf.stats) { $("#tab-stats").innerHTML = '<div class="panel p-3 hint">Stats block not available.</div>'; return; }
+
+  let floats = "", nzF = 0;
+  for (let i = 0; i < ST.FLOAT_COUNT; i++) {
+    const v = sf.fStat(i);
+    if (v === 0) continue;
+    nzF++;
+    const nm = NAMED_FLOAT_STATS[i];
+    floats += "<tr><td class='mono'>" + i + "</td><td class='" + (nm ? "named" : "unnamed") + "'>" +
+      esc(nm || "Float stat #" + i) + (nm ? ' <span class="badge text-bg-success">verified</span>' : "") +
+      "</td><td class='mono text-end'>" + (Math.abs(v) < 1e-4 ? v.toExponential(2) : v.toFixed(2)) + "</td></tr>";
+  }
+
+  let ints = "", nzI = 0;
+  for (let i = 0; i < ST.INT_COUNT; i++) {
+    const v = sf.iStat(i);
+    if (v === 0) continue;
+    nzI++;
+    const idx = i + ST.FLOAT_COUNT; // physical dword index, matches Explorer
+    const nm = NAMED_INT_STATS[idx];
+    ints += "<tr><td class='mono'>" + idx + "</td><td class='" + (nm ? "named" : "unnamed") + "'>" +
+      esc(nm || "Int stat #" + idx) + (nm ? ' <span class="badge text-bg-success">verified</span>' : "") +
+      "</td><td class='mono text-end'>" + fmtNum(v) + "</td></tr>";
+  }
+
+  let kills = "", killTotal = 0;
+  for (let i = 0; i < ST.KILL_COUNT; i++) {
+    const v = sf.pedKill(i);
+    if (!v) continue;
+    killTotal += v;
+    kills += "<tr><td class='mono'>" + i + "</td><td class='unnamed'>Ped type #" + i + "</td><td class='mono text-end'>" + fmtNum(v) + "</td></tr>";
+  }
+
+  let radio = "", radioTotal = 0;
+  for (let i = 0; i < ST.RADIO_COUNT; i++) {
+    const v = sf.radio(i);
+    if (!v) continue;
+    radioTotal += v;
+    radio += "<tr><td class='mono'>" + i + "</td><td class='unnamed'>Station #" + i + "</td><td class='mono text-end'>" + fmtNum(v) + "</td></tr>";
+  }
+
+  const attempts = [];
+  for (let i = 0; i < ST.ATTEMPT_COUNT; i++) { const v = sf.attempt(i); if (v) attempts.push(i + ":" + v); }
+
+  $("#tab-stats").innerHTML =
+    '<div class="alert alert-secondary py-2 small">' +
+      "Every value below is read straight from the stats block at its documented offset. Names are shown only " +
+      "where the index was <strong>confirmed</strong> against a save with published figures; the rest are listed " +
+      "by index rather than given a guessed label." +
+    "</div>" +
+    '<div class="row g-3">' +
+      '<div class="col-xl-6"><div class="panel p-3"><h6>Float stats <span class="hint">(' + nzF + " non-zero of " + ST.FLOAT_COUNT + ")</span></h6>" +
+        statTable(floats, ["#", "Stat", "Value"]) + "</div></div>" +
+      '<div class="col-xl-6"><div class="panel p-3"><h6>Integer stats <span class="hint">(' + nzI + " non-zero of " + ST.INT_COUNT + ")</span></h6>" +
+        statTable(ints, ["#", "Stat", "Value"]) + "</div></div>" +
+      '<div class="col-xl-6"><div class="panel p-3"><h6>Peds killed by type <span class="hint">(' + fmtNum(killTotal) + " total)</span></h6>" +
+        (kills ? statTable(kills, ["#", "Category", "Kills"]) : '<p class="hint mb-0">No kills recorded.</p>') + "</div></div>" +
+      '<div class="col-xl-6"><div class="panel p-3"><h6>Radio listening <span class="hint">(' + fmtNum(radioTotal) + " total units)</span></h6>" +
+        (radio ? statTable(radio, ["#", "Station", "Time"]) : '<p class="hint mb-0">No radio time recorded.</p>') +
+        '<h6 class="mt-3">Mission attempts</h6><p class="hint mb-0">' +
+        (attempts.length ? attempts.join(", ") : "All 100 entries are zero in this save — the PC v1 build does not populate this array.") +
+        "</p></div></div>" +
+    "</div>";
+}
+
+/* ---------- checklists ---------- */
 
 function itemRow(item) {
   const r = resolveItem(item, SF);
@@ -649,11 +773,9 @@ function itemRow(item) {
   const badge = r.state === "done" ? '<span class="badge text-bg-success">' + esc(r.label) + "</span>"
               : r.state === "todo" ? '<span class="badge text-bg-danger">' + esc(r.label) + "</span>"
               : '<span class="badge badge-unmapped">' + esc(r.label) + "</span>";
-  return '<div class="chk-item ' + r.state + '" data-item="' + item.id + '">' +
-    '<span class="chk-mark">' + mark + "</span>" +
-    '<span class="chk-name">' + esc(item.name) +
-      (item.note ? "<small>" + esc(item.note) + "</small>" : "") + "</span>" +
-    badge + "</div>";
+  return '<div class="chk-item ' + r.state + '"><span class="chk-mark">' + mark + "</span>" +
+    '<span class="chk-name">' + esc(item.name) + (item.note ? "<small>" + esc(item.note) + "</small>" : "") +
+    "</span>" + badge + "</div>";
 }
 
 function groupStats(group) {
@@ -669,71 +791,32 @@ function groupStats(group) {
 function renderCategory(sel, cat) {
   const accId = "acc-" + id(cat.title);
   const body = cat.groups.map((g, i) => {
-    const st = groupStats(g);
-    const cid = accId + "-" + i;
-    return '<div class="accordion-item">' +
-      '<h2 class="accordion-header"><button class="accordion-button' + (i ? " collapsed" : "") +
-        '" type="button" data-bs-toggle="collapse" data-bs-target="#' + cid + '">' +
-        '<span class="group-head w-100 pe-3">' +
-          "<span>" + esc(g.name) + "</span>" +
-          '<span class="badge text-bg-secondary">' + st.done + "/" + st.total + "</span>" +
-          '<div class="progress" style="height:6px"><div class="progress-bar bg-success" style="width:' + st.pct.toFixed(1) + '%"></div></div>' +
-          (st.known < st.total ? '<span class="badge badge-unmapped">' + (st.total - st.known) + " unmapped</span>" : "") +
-        "</span></button></h2>" +
+    const st = groupStats(g), cid = accId + "-" + i;
+    return '<div class="accordion-item"><h2 class="accordion-header">' +
+      '<button class="accordion-button' + (i ? " collapsed" : "") + '" type="button" data-bs-toggle="collapse" data-bs-target="#' + cid + '">' +
+      '<span class="group-head w-100 pe-3"><span>' + esc(g.name) + "</span>" +
+      '<span class="badge text-bg-secondary">' + st.done + "/" + st.total + "</span>" +
+      bar(st.pct) +
+      (st.known < st.total ? '<span class="badge badge-unmapped">' + (st.total - st.known) + " unmapped</span>" : "") +
+      "</span></button></h2>" +
       '<div id="' + cid + '" class="accordion-collapse collapse' + (i ? "" : " show") + '" data-bs-parent="#' + accId + '">' +
-        '<div class="accordion-body pt-2">' + g.items.map(itemRow).join("") + "</div></div></div>";
+      '<div class="accordion-body pt-2">' + g.items.map(itemRow).join("") + "</div></div></div>";
   }).join("");
 
-  $(sel).innerHTML = '<div class="accordion" id="' + accId + '">' + body + "</div>";
-}
-
-function renderTodo() {
-  const missing = [], unmapped = [];
-  for (const cat of Object.values(CATEGORIES)) {
-    for (const g of cat.groups) {
-      for (const it of g.items) {
-        const r = resolveItem(it, SF);
-        const row = { cat: cat.title, group: g.name, item: it, r };
-        if (r.state === "todo") missing.push(row);
-        else if (r.state === "unknown") unmapped.push(row);
-      }
-    }
-  }
-
-  const list = missing.length
-    ? missing.map(x =>
-        '<div class="chk-item todo"><span class="chk-mark">✘</span><span class="chk-name">' +
-        esc(x.item.name) + "<small>" + esc(x.cat + " · " + x.group) + '</small></span>' +
-        '<span class="badge text-bg-danger">' + esc(x.r.label) + "</span></div>").join("")
-    : '<p class="hint mb-0">Nothing outstanding among the calibrated items.</p>';
-
-  $("#tab-todo").innerHTML =
-    '<div class="row g-3">' +
-      '<div class="col-lg-7"><div class="panel p-3">' +
-        '<h5 class="mb-1">Outstanding for 100%</h5>' +
-        '<p class="hint">' + missing.length + " item(s) confirmed incomplete.</p>" + list +
-      "</div></div>" +
-      '<div class="col-lg-5"><div class="panel p-3">' +
-        '<h5 class="mb-1">Unverified</h5>' +
-        '<p class="hint">' + unmapped.length + " item(s) have no global variable bound yet, so this tool " +
-          "will not claim they are done or missing. Bind them in the Calibration tab." + "</p>" +
-        (unmapped.length ? '<div style="max-height:340px;overflow:auto">' +
-          unmapped.slice(0, 400).map(x =>
-            '<div class="chk-item unknown"><span class="chk-mark">?</span><span class="chk-name">' +
-            esc(x.item.name) + "<small>" + esc(x.group) + "</small></span></div>").join("") + "</div>" : "") +
-      "</div></div>" +
-    "</div>";
+  $(sel).innerHTML =
+    '<div class="alert alert-secondary py-2 small">These entries depend on script-global indices that are not ' +
+    'published anywhere. Rather than show guessed ticks, unbound items stay grey — bind them in Calibration.</div>' +
+    '<div class="accordion" id="' + accId + '">' + body + "</div>";
 }
 
 /* ---------- explorer ---------- */
 
 function renderBlocks(sf) {
   $("#blockTable").innerHTML =
-    "<thead><tr><th>#</th><th>Name</th><th>Marker</th><th>Data</th><th class='text-end'>Size</th></tr></thead><tbody>" +
-    sf.blocks.map(b =>
-      "<tr><td>" + b.index + "</td><td>" + esc(b.name) + "</td><td>0x" + b.markerOffset.toString(16) +
-      "</td><td>0x" + b.dataStart.toString(16) + "</td><td class='text-end'>" + b.size.toLocaleString() + "</td></tr>"
-    ).join("") + "</tbody>";
+    "<thead><tr><th>#</th><th>Name</th><th>Data</th><th class='text-end'>Size</th></tr></thead><tbody>" +
+    sf.blocks.map(b => "<tr><td>" + b.index + "</td><td>" + esc(b.name) +
+      "</td><td>0x" + b.dataStart.toString(16) + "</td><td class='text-end'>" + fmtNum(b.size) + "</td></tr>").join("") +
+    "</tbody>";
 }
 
 function renderGlobals(sf, from, filterValue) {
@@ -746,30 +829,26 @@ function renderGlobals(sf, from, filterValue) {
     for (let i = from; i < Math.min(from + 300, sf.script.count); i++) rows.push(i);
   }
   $("#globalsTable").innerHTML =
-    "<thead><tr><th>Global</th><th class='text-end'>int32</th><th class='text-end'>float32</th><th>Offset</th></tr></thead><tbody>" +
+    "<thead><tr><th>Global</th><th class='text-end'>int32</th><th class='text-end'>float32</th></tr></thead><tbody>" +
     rows.map(i => {
       const f = sf.gFloat(i);
       const fs = (Number.isFinite(f) && Math.abs(f) > 1e-6 && Math.abs(f) < 1e9) ? f.toFixed(3) : "—";
       return "<tr><td><code class='g'>$" + i + "</code></td><td class='text-end'>" + sf.gInt(i) +
-             "</td><td class='text-end'>" + fs + "</td><td>0x" +
-             (sf.script.globalsStart + i * 4).toString(16) + "</td></tr>";
+             "</td><td class='text-end'>" + fs + "</td></tr>";
     }).join("") + "</tbody>";
 }
 
 /* ---------- calibration ---------- */
 
-let DIFF = [];
-
 function renderDiff(other) {
   if (!SF.script || !other.script) return;
-  const n = Math.min(SF.script.count, other.script.count);
-  DIFF = [];
+  const n = Math.min(SF.script.count, other.script.count), diff = [];
   for (let i = 0; i < n; i++) {
     const a = SF.gInt(i), b = other.gInt(i);
-    if (a !== b) DIFF.push({ index: i, before: a, after: b });
-    if (DIFF.length > 2000) break;
+    if (a !== b) diff.push({ index: i, before: a, after: b });
+    if (diff.length > 2000) break;
   }
-  $("#diffCount").textContent = "— " + DIFF.length + " differ (current vs " + esc(other.name) + ")";
+  $("#diffCount").textContent = "— " + diff.length + " differ (current vs " + other.name + ")";
 
   const opts = ['<option value="">— bind to —</option>'];
   for (const cat of Object.values(CATEGORIES))
@@ -779,34 +858,24 @@ function renderDiff(other) {
 
   $("#diffTable").innerHTML =
     "<thead><tr><th>Global</th><th class='text-end'>Current</th><th class='text-end'>Other</th><th style='width:38%'>Bind</th></tr></thead><tbody>" +
-    DIFF.slice(0, 600).map(d =>
+    diff.slice(0, 600).map(d =>
       "<tr><td><code class='g'>$" + d.index + "</code></td><td class='text-end'>" + d.before +
       "</td><td class='text-end'>" + d.after + "</td><td>" +
       '<select class="form-select form-select-sm bind-sel" data-index="' + d.index + '">' + opts.join("") + "</select>" +
       "</td></tr>").join("") + "</tbody>";
 
-  document.querySelectorAll(".bind-sel").forEach(sel => {
-    sel.addEventListener("change", () => {
-      const itemId = sel.value, idx = Number(sel.dataset.index);
-      if (!itemId) return;
-      Mapping.set(itemId, { index: idx, type: "int" });
-      refreshAfterMapping();
-    });
-  });
+  document.querySelectorAll(".bind-sel").forEach(sel => sel.addEventListener("change", () => {
+    if (!sel.value) return;
+    Mapping.set(sel.value, { index: Number(sel.dataset.index), type: "int" });
+    refreshAfterMapping();
+  }));
 }
 
 function refreshAfterMapping() {
   renderCategory("#tab-story", CATEGORIES.story);
   renderCategory("#tab-side", CATEGORIES.side);
-  renderCategory("#tab-collect", CATEGORIES.collect);
   renderCategory("#tab-assets", CATEGORIES.assets);
-  renderTodo();
-  updateUnmappedBadge();
-  if (SF) renderSummary(SF, SF.validate());
-}
-
-function updateUnmappedBadge() {
-  $("#unmappedCount").textContent = (totalItems() - Mapping.count()) + " unmapped";
+  renderOverview();
 }
 
 /* ============================================================
@@ -817,10 +886,7 @@ function readSave(file) {
   return new Promise((resolve, reject) => {
     const fr = new FileReader();
     fr.onerror = () => reject(new Error("Could not read the file."));
-    fr.onload = () => {
-      try { resolve(new SaveFile(fr.result, file.name)); }
-      catch (e) { reject(e); }
-    };
+    fr.onload = () => { try { resolve(new SaveFile(fr.result, file.name)); } catch (e) { reject(e); } };
     fr.readAsArrayBuffer(file);
   });
 }
@@ -835,8 +901,7 @@ async function handleFile(file) {
       err.classList.remove("d-none");
       err.innerHTML = "<strong>This does not parse as a PC original SA save.</strong><ul>" +
         v.errs.map(e => "<li>" + esc(e) + "</li>").join("") + "</ul>" +
-        "<details><summary class='small'>Structure diagnostics</summary>" +
-        "<pre class='mono mb-0 mt-2' style='white-space:pre-wrap'>" +
+        "<details><summary class='small'>Structure diagnostics</summary><pre class='mono mb-0 mt-2' style='white-space:pre-wrap'>" +
         esc(sf.diagnostics().join("\n")) + "</pre></details>";
       return;
     }
@@ -851,10 +916,8 @@ const dz = $("#dropzone");
 dz.addEventListener("click", () => $("#fileInput").click());
 $("#browseBtn").addEventListener("click", e => { e.stopPropagation(); $("#fileInput").click(); });
 $("#fileInput").addEventListener("change", e => { if (e.target.files[0]) handleFile(e.target.files[0]); });
-["dragenter", "dragover"].forEach(ev =>
-  dz.addEventListener(ev, e => { e.preventDefault(); dz.classList.add("dragover"); }));
-["dragleave", "drop"].forEach(ev =>
-  dz.addEventListener(ev, e => { e.preventDefault(); dz.classList.remove("dragover"); }));
+["dragenter","dragover"].forEach(ev => dz.addEventListener(ev, e => { e.preventDefault(); dz.classList.add("dragover"); }));
+["dragleave","drop"].forEach(ev => dz.addEventListener(ev, e => { e.preventDefault(); dz.classList.remove("dragover"); }));
 dz.addEventListener("drop", e => { if (e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]); });
 
 $("#newFileBtn").addEventListener("click", () => {
@@ -865,13 +928,19 @@ $("#newFileBtn").addEventListener("click", () => {
 
 $("#exportBtn").addEventListener("click", () => {
   const report = {
-    file: SF.name, bytes: SF.bytes.length, blocks: SF.blocks,
-    checksum: SF.checksum, summary: SUMMARY,
-    items: Object.entries(CATEGORIES).flatMap(([k, c]) =>
-      c.groups.flatMap(g => g.items.map(it => {
-        const r = resolveItem(it, SF);
-        return { category: c.title, group: g.name, name: it.name, state: r.state, detail: r.label };
-      })))
+    file: SF.name, bytes: SF.bytes.length,
+    completionPercent: SUMMARY.progress ? +SUMMARY.progress.value.toFixed(2) : null,
+    progressMade: SUMMARY.progress ? SUMMARY.progress.made : null,
+    totalProgress: SUMMARY.progress ? SUMMARY.progress.total : null,
+    money: SUMMARY.money ? SUMMARY.money.value : null,
+    saveName: SUMMARY.saveName ? SUMMARY.saveName.value : null,
+    lastMissionKey: SUMMARY.lastMission,
+    collectibles: SUMMARY.collectibles,
+    blocks: SF.blocks,
+    floatStats: Array.from({ length: ST.FLOAT_COUNT }, (_, i) => SF.fStat(i)),
+    intStats: Array.from({ length: ST.INT_COUNT }, (_, i) => SF.iStat(i)),
+    pedsKilled: Array.from({ length: ST.KILL_COUNT }, (_, i) => SF.pedKill(i)),
+    radioPlays: Array.from({ length: ST.RADIO_COUNT }, (_, i) => SF.radio(i))
   };
   downloadJSON(report, SF.name.replace(/\.b$/i, "") + "-report.json");
 });
@@ -884,8 +953,7 @@ $("#gSearchVal").addEventListener("change", e => renderGlobals(SF, 0, e.target.v
 
 $("#diffInput").addEventListener("change", async e => {
   if (!e.target.files[0]) return;
-  try { renderDiff(await readSave(e.target.files[0])); }
-  catch (err) { alert(err.message); }
+  try { renderDiff(await readSave(e.target.files[0])); } catch (err) { alert(err.message); }
 });
 
 $("#mapExportBtn").addEventListener("click", () => downloadJSON(Mapping.data, "sa-global-mapping.json"));
@@ -893,10 +961,8 @@ $("#mapImportBtn").addEventListener("click", () => $("#mapImportInput").click())
 $("#mapImportInput").addEventListener("change", e => {
   const f = e.target.files[0]; if (!f) return;
   const fr = new FileReader();
-  fr.onload = () => {
-    try { Mapping.data = JSON.parse(fr.result); Mapping.save(); refreshAfterMapping(); }
-    catch { alert("That file is not valid JSON."); }
-  };
+  fr.onload = () => { try { Mapping.data = JSON.parse(fr.result); Mapping.save(); refreshAfterMapping(); }
+                      catch { alert("That file is not valid JSON."); } };
   fr.readAsText(f);
 });
 $("#mapClearBtn").addEventListener("click", () => {
